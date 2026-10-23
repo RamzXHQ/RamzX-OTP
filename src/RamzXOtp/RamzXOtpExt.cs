@@ -38,13 +38,74 @@ namespace RamzXOtp
                 if (b == null) return null;
                 return msg => b.VerifyAsync(m_host.MainWindow, msg);
             }, () => DateTime.UtcNow);
+
+            AddTopLevelCopy();
             return true;
         }
 
         public override void Terminate()
         {
+            ContextMenuStrip cms = m_host == null ? null : m_host.MainWindow.EntryContextMenu;
+            if (cms != null && m_topCopy != null)
+            {
+                cms.Opening -= OnEntryMenuOpening;
+                cms.Items.Remove(m_topCopy);
+                m_topCopy.Dispose();
+            }
+            m_topCopy = null;
             m_guard = null;
             m_host = null;
+        }
+
+        private ToolStripMenuItem m_topCopy;
+
+        /// <summary>
+        /// "Copy OTP code 123 456 (20 s)" directly in the entry context menu, right below KeePass's
+        /// "Copy Password"; only visible for entries that have a one-time password.
+        /// </summary>
+        private void AddTopLevelCopy()
+        {
+            ContextMenuStrip cms = m_host.MainWindow.EntryContextMenu;
+            if (cms == null) return;
+
+            m_topCopy = new ToolStripMenuItem(Strings.Get(Strings.MenuCopyTopProtected));
+            m_topCopy.Image = Icons.Menu(m_host.MainWindow);
+            m_topCopy.Font = new System.Drawing.Font(cms.Font, System.Drawing.FontStyle.Bold);
+            m_topCopy.Visible = false;
+            m_topCopy.Click += OnCopyClick;
+
+            int index = -1;
+            for (int i = 0; i < cms.Items.Count; ++i)
+                if (cms.Items[i].Name.IndexOf("CopyPassword", StringComparison.OrdinalIgnoreCase) >= 0) index = i + 1;
+            if (index < 0) index = Math.Min(2, cms.Items.Count);
+            cms.Items.Insert(index, m_topCopy);
+            cms.Opening += OnEntryMenuOpening;
+        }
+
+        private void OnEntryMenuOpening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (m_topCopy == null) return;
+            string info = CopyInfo(SelectedEntry());
+            m_topCopy.Visible = info != null;
+            if (info == null) return;
+            m_topCopy.Text = info.Length == 0 ? Strings.Get(Strings.MenuCopyTopProtected)
+                : Strings.Format(Strings.MenuCopyTop, info);
+        }
+
+        /// <summary>null = no OTP; "" = protected (do not show); otherwise "123 456  (20 s)".</summary>
+        private string CopyInfo(PwEntry e)
+        {
+            OtpParameters p = e == null ? null : KeePassOtpFields.Read(e);
+            if (p == null) return null;
+            try
+            {
+                if (!m_guard.MayShowWithoutAsking) return string.Empty;
+                long now = Totp.UnixNow();
+                return p.Type == OtpType.Totp
+                    ? Group(p.CurrentCode(now)) + "  (" + Strings.Format(Strings.Remaining, Totp.SecondsRemaining(now, p.Period)) + ")"
+                    : "HOTP";
+            }
+            finally { p.Clear(); }
         }
 
         /// <summary>
@@ -110,31 +171,11 @@ namespace RamzXOtp
 
         private void UpdateCopyItem(ToolStripMenuItem copy)
         {
-            PwEntry e = SelectedEntry();
-            OtpParameters p = e == null ? null : KeePassOtpFields.Read(e);
-            if (p == null)
-            {
-                copy.Text = Strings.Get(Strings.MenuCopyNone);
-                copy.Enabled = false;
-                return;
-            }
-            try
-            {
-                if (!m_guard.MayShowWithoutAsking)
-                {
-                    // Protected: never show the code before Windows Hello.
-                    copy.Text = Strings.Get(Strings.MenuCopyProtected);
-                    copy.Enabled = true;
-                    return;
-                }
-                long now = Totp.UnixNow();
-                string info = p.Type == OtpType.Totp
-                    ? Group(p.CurrentCode(now)) + "  (" + Strings.Format(Strings.Remaining, Totp.SecondsRemaining(now, p.Period)) + ")"
-                    : "HOTP";
-                copy.Text = Strings.Format(Strings.MenuCopy, info);
-                copy.Enabled = true;
-            }
-            finally { p.Clear(); }
+            string info = CopyInfo(SelectedEntry());
+            copy.Enabled = info != null;
+            if (info == null) copy.Text = Strings.Get(Strings.MenuCopyNone);
+            else if (info.Length == 0) copy.Text = Strings.Get(Strings.MenuCopyProtected); // never show before Hello
+            else copy.Text = Strings.Format(Strings.MenuCopy, info);
         }
 
         private async void OnCopyClick(object sender, EventArgs e)
@@ -181,14 +222,19 @@ namespace RamzXOtp
                 return;
             }
 
-            if (KeePassOtpFields.HasOtp(entry) && !Ui.Ask(owner, Strings.Get(Strings.ConfirmReplace))) return;
-
+            // An existing OTP is shown in the dialog (with its live code); saving keeps the old
+            // values in the entry history, so no extra confirmation is needed.
+            OtpParameters existing = KeePassOtpFields.Read(entry);
             OtpParameters p;
-            using (AddOtpForm f = new AddOtpForm(entry.Strings.ReadSafe(PwDefs.TitleField)))
+            try
             {
-                if (UIUtil.ShowDialogAndDestroy(f) != DialogResult.OK) return;
-                p = f.Result;
+                using (AddOtpForm f = new AddOtpForm(entry.Strings.ReadSafe(PwDefs.TitleField), existing))
+                {
+                    if (UIUtil.ShowDialogAndDestroy(f) != DialogResult.OK) return;
+                    p = f.Result;
+                }
             }
+            finally { if (existing != null) existing.Clear(); }
             if (p == null) return;
 
             try

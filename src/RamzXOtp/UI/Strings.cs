@@ -99,6 +99,8 @@ namespace RamzXOtp.UI
         internal const string HelloNotEnabled = "HelloNotEnabled";
         internal const string HelloDenied = "HelloDenied";
         internal const string UnlockMissing = "UnlockMissing";
+        internal const string MenuCopyTop = "MenuCopyTop";
+        internal const string MenuCopyTopProtected = "MenuCopyTopProtected";
         internal const string Copy = "Copy";
         internal const string Copied = "Copied";
         internal const string Save = "Save";
@@ -149,6 +151,8 @@ namespace RamzXOtp.UI
                 { HelloNotEnabled, "Windows Hello was not confirmed. The protection stays off." },
                 { HelloDenied, "Windows Hello was not confirmed. The code was not copied." },
                 { UnlockMissing, "This protection needs the Miftawerk Unlock plugin, which is not loaded. The code was not copied.\r\n\r\nYou can switch the protection off in the RamzX OTP menu." },
+                { MenuCopyTop, "Copy OTP code   {0}" },
+                { MenuCopyTopProtected, "Copy OTP code (after Windows Hello)" },
                 { Copy, "Copy" },                { Copied, "Copied ✓" },
                 { Save, "Save" },
                 { Cancel, "Cancel" },
@@ -200,6 +204,8 @@ namespace RamzXOtp.UI
                 { HelloNotEnabled, "Windows Hello wurde nicht bestätigt. Der Schutz bleibt aus." },
                 { HelloDenied, "Windows Hello wurde nicht bestätigt. Der Code wurde nicht kopiert." },
                 { UnlockMissing, "Dieser Schutz benötigt das Plugin Miftawerk Unlock, das nicht geladen ist. Der Code wurde nicht kopiert.\r\n\r\nSie können den Schutz im RamzX-OTP-Menü ausschalten." },
+                { MenuCopyTop, "OTP-Code kopieren   {0}" },
+                { MenuCopyTopProtected, "OTP-Code kopieren (nach Windows Hello)" },
                 { Copy, "Kopieren" },                { Copied, "Kopiert ✓" },
                 { Save, "Speichern" },
                 { Cancel, "Abbrechen" },
@@ -251,6 +257,8 @@ namespace RamzXOtp.UI
                 { HelloNotEnabled, "لم يتم تأكيد Windows Hello. تبقى الحماية مطفأة." },
                 { HelloDenied, "لم يتم تأكيد Windows Hello. لم يُنسخ الرمز." },
                 { UnlockMissing, "هذه الحماية تتطلب إضافة Miftawerk Unlock، وهي غير محمّلة. لم يُنسخ الرمز.\r\n\r\nيمكنك إطفاء الحماية من قائمة RamzX OTP." },
+                { MenuCopyTop, "نسخ رمز OTP   {0}" },
+                { MenuCopyTopProtected, "نسخ رمز OTP (بعد Windows Hello)" },
                 { Copy, "نسخ" },                { Copied, "تم النسخ ✓" },
                 { Save, "حفظ" },
                 { Cancel, "إلغاء" },

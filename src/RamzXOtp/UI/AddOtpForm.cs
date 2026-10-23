@@ -39,6 +39,14 @@ namespace RamzXOtp.UI
         /// <summary>The parameters to save (valid after DialogResult.OK).</summary>
         internal OtpParameters Result { get { return m_result == null ? null : m_result.Parameters; } }
 
+        /// <param name="existing">Current OTP of the entry (shown for editing), or null.</param>
+        internal AddOtpForm(string entryTitle, OtpParameters existing = null)
+            : this(entryTitle)
+        {
+            if (existing != null && existing.Secret != null && !existing.IsSteam)
+                m_input.Text = OtpAuthUri.Format(existing);
+        }
+
         internal AddOtpForm(string entryTitle)
         {
             m_entryTitle = entryTitle;
@@ -363,6 +371,9 @@ namespace RamzXOtp.UI
         {
             m_timer.Stop();
             m_timer.Dispose();
+            // Wipe the visible secret without re-evaluating: Evaluate() would clear the result
+            // that the caller is about to save.
+            m_updating = true;
             m_input.Text = string.Empty;
             if (DialogResult != DialogResult.OK && m_result != null && m_result.Parameters != null)
                 m_result.Parameters.Clear();
