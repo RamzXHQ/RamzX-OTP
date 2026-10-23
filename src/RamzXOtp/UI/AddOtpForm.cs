@@ -176,7 +176,7 @@ namespace RamzXOtp.UI
 
             Controls.Add(t);
             Controls.Add(m_banner);
-            ClientSize = new Size(w + Font.Height * 2, m_banner.Height + t.PreferredSize.Height + Font.Height * 2);
+            ClientSize = new Size(w + Font.Height * 2, m_banner.Height + t.PreferredSize.Height + Font.Height * 4);
 
             AcceptButton = m_save;
             CancelButton = cancel;
@@ -193,7 +193,7 @@ namespace RamzXOtp.UI
             // Same banner style as KeePass's own dialogs.
             BannerFactory.CreateBannerEx(this, m_banner, Icons.Timer(48), Ui.Title,
                 Strings.Format(Strings.BannerSubtitle, m_entryTitle));
-            ClientSize = new Size(ClientSize.Width, m_banner.Height + Controls[0].PreferredSize.Height + Font.Height * 2);
+            ClientSize = new Size(ClientSize.Width, m_banner.Height + Controls[0].PreferredSize.Height + Font.Height * 4);
             m_input.Focus();
         }
 
@@ -322,7 +322,7 @@ namespace RamzXOtp.UI
 
             m_save.Enabled = m_result.State == OtpInputState.Ok || m_result.State == OtpInputState.Short;
             if (IsHandleCreated && Controls.Count > 1)
-                ClientSize = new Size(ClientSize.Width, m_banner.Height + Controls[0].PreferredSize.Height + Font.Height * 2);
+                ClientSize = new Size(ClientSize.Width, m_banner.Height + Controls[0].PreferredSize.Height + Font.Height * 4);
             UpdatePreview();
         }
 

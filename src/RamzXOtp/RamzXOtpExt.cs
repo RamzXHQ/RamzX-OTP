@@ -12,6 +12,7 @@ using KeePass.Util;
 using KeePassLib;
 using KeePassLib.Security;
 
+using RamzXOtp.Integration;
 using RamzXOtp.Otp;
 using RamzXOtp.Storage;
 using RamzXOtp.UI;
@@ -22,17 +23,27 @@ namespace RamzXOtp
     public sealed class RamzXOtpExt : Plugin
     {
         private IPluginHost m_host;
+        private CopyGuard m_guard;
 
         public override bool Initialize(IPluginHost host)
         {
             if (host == null) return false;
             m_host = host;
             Strings.Select(Program.Translation.Properties.Iso6391Code);
+
+            // Miftawerk Unlock is looked up each time, so load order and later installs don't matter.
+            m_guard = new CopyGuard(host.CustomConfig, () =>
+            {
+                UnlockBridge b = UnlockBridge.Find();
+                if (b == null) return null;
+                return msg => b.VerifyAsync(m_host.MainWindow, msg);
+            }, () => DateTime.UtcNow);
             return true;
         }
 
         public override void Terminate()
         {
+            m_guard = null;
             m_host = null;
         }
 
@@ -55,8 +66,38 @@ namespace RamzXOtp
             add.Click += OnAddClick;
             root.DropDownItems.Add(add);
 
-            root.DropDownOpening += delegate { UpdateCopyItem(copy); };
+            root.DropDownItems.Add(new ToolStripSeparator());
+
+            ToolStripMenuItem protect = new ToolStripMenuItem(Strings.Get(Strings.MenuRequireHello));
+            protect.ToolTipText = Strings.Get(Strings.RequireHelloNote);
+            protect.Click += OnProtectClick;
+            root.DropDownItems.Add(protect);
+
+            root.DropDownOpening += delegate
+            {
+                UpdateCopyItem(copy);
+                UpdateProtectItem(protect);
+            };
             return root;
+        }
+
+        private void UpdateProtectItem(ToolStripMenuItem protect)
+        {
+            bool available = m_guard.UnlockAvailable;
+            protect.Checked = m_guard.RequireHello;
+            protect.Text = Strings.Get(available ? Strings.MenuRequireHello : Strings.MenuRequireHelloMissing);
+            protect.Enabled = available || protect.Checked; // always allow switching it off
+        }
+
+        private async void OnProtectClick(object sender, EventArgs e)
+        {
+            if (m_guard.RequireHello)
+            {
+                m_guard.RequireHello = false;
+                return;
+            }
+            if (!await m_guard.EnableAsync(Strings.Get(Strings.HelloEnableReason)))
+                Ui.Info(m_host.MainWindow, Strings.Get(Strings.HelloNotEnabled));
         }
 
         private PwEntry SelectedEntry()
@@ -79,6 +120,13 @@ namespace RamzXOtp
             }
             try
             {
+                if (!m_guard.MayShowWithoutAsking)
+                {
+                    // Protected: never show the code before Windows Hello.
+                    copy.Text = Strings.Get(Strings.MenuCopyProtected);
+                    copy.Enabled = true;
+                    return;
+                }
                 long now = Totp.UnixNow();
                 string info = p.Type == OtpType.Totp
                     ? Group(p.CurrentCode(now)) + "  (" + Strings.Format(Strings.Remaining, Totp.SecondsRemaining(now, p.Period)) + ")"
@@ -89,10 +137,17 @@ namespace RamzXOtp
             finally { p.Clear(); }
         }
 
-        private void OnCopyClick(object sender, EventArgs e)
+        private async void OnCopyClick(object sender, EventArgs e)
         {
             PwEntry entry = SelectedEntry();
-            OtpParameters p = entry == null ? null : KeePassOtpFields.Read(entry);
+            if (entry == null || !KeePassOtpFields.HasOtp(entry)) return;
+
+            GuardResult g = await m_guard.CheckAsync(Strings.Format(Strings.HelloCopyReason,
+                entry.Strings.ReadSafe(PwDefs.TitleField)));
+            if (g == GuardResult.Denied) { m_host.MainWindow.SetStatusEx(Strings.Get(Strings.HelloDenied)); return; }
+            if (g == GuardResult.UnlockMissing) { Ui.Warn(m_host.MainWindow, Strings.Get(Strings.UnlockMissing)); return; }
+
+            OtpParameters p = KeePassOtpFields.Read(entry);
             if (p == null) return;
             try
             {

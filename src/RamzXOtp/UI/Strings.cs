@@ -90,6 +90,15 @@ namespace RamzXOtp.UI
         internal const string ImportCaption = "ImportCaption";
         internal const string SettingsCaption = "SettingsCaption";
         internal const string BannerSubtitle = "BannerSubtitle";
+        internal const string MenuRequireHello = "MenuRequireHello";
+        internal const string MenuRequireHelloMissing = "MenuRequireHelloMissing";
+        internal const string RequireHelloNote = "RequireHelloNote";
+        internal const string MenuCopyProtected = "MenuCopyProtected";
+        internal const string HelloCopyReason = "HelloCopyReason";
+        internal const string HelloEnableReason = "HelloEnableReason";
+        internal const string HelloNotEnabled = "HelloNotEnabled";
+        internal const string HelloDenied = "HelloDenied";
+        internal const string UnlockMissing = "UnlockMissing";
         internal const string Copy = "Copy";
         internal const string Copied = "Copied";
         internal const string Save = "Save";
@@ -131,6 +140,15 @@ namespace RamzXOtp.UI
                 { ImportCaption, "1. Get the QR code" },
                 { SettingsCaption, "Settings (only for a pasted secret key)" },
                 { BannerSubtitle, "One-time password for: {0}" },
+                { MenuRequireHello, "Windows Hello before copying (Miftawerk Unlock)" },
+                { MenuRequireHelloMissing, "Windows Hello before copying (requires Miftawerk Unlock)" },
+                { RequireHelloNote, "Applies to RamzX OTP. KeePass's own commands (Ctrl+T, {TIMEOTP}) are not affected." },
+                { MenuCopyProtected, "Copy code (after Windows Hello)" },
+                { HelloCopyReason, "RamzX OTP: copy the one-time password for \"{0}\"" },
+                { HelloEnableReason, "RamzX OTP: turn on Windows Hello protection for one-time passwords" },
+                { HelloNotEnabled, "Windows Hello was not confirmed. The protection stays off." },
+                { HelloDenied, "Windows Hello was not confirmed. The code was not copied." },
+                { UnlockMissing, "This protection needs the Miftawerk Unlock plugin, which is not loaded. The code was not copied.\r\n\r\nYou can switch the protection off in the RamzX OTP menu." },
                 { Copy, "Copy" },                { Copied, "Copied ✓" },
                 { Save, "Save" },
                 { Cancel, "Cancel" },
@@ -173,6 +191,15 @@ namespace RamzXOtp.UI
                 { ImportCaption, "1. QR-Code holen" },
                 { SettingsCaption, "Einstellungen (nur bei eingefügtem geheimen Schlüssel)" },
                 { BannerSubtitle, "Einmalpasswort für: {0}" },
+                { MenuRequireHello, "Vor dem Kopieren Windows Hello verlangen (Miftawerk Unlock)" },
+                { MenuRequireHelloMissing, "Vor dem Kopieren Windows Hello verlangen (benötigt Miftawerk Unlock)" },
+                { RequireHelloNote, "Gilt für RamzX OTP. KeePass-eigene Befehle (Strg+T, {TIMEOTP}) sind nicht betroffen." },
+                { MenuCopyProtected, "Code kopieren (nach Windows Hello)" },
+                { HelloCopyReason, "RamzX OTP: Einmalpasswort für \"{0}\" kopieren" },
+                { HelloEnableReason, "RamzX OTP: Windows-Hello-Schutz für Einmalpasswörter einschalten" },
+                { HelloNotEnabled, "Windows Hello wurde nicht bestätigt. Der Schutz bleibt aus." },
+                { HelloDenied, "Windows Hello wurde nicht bestätigt. Der Code wurde nicht kopiert." },
+                { UnlockMissing, "Dieser Schutz benötigt das Plugin Miftawerk Unlock, das nicht geladen ist. Der Code wurde nicht kopiert.\r\n\r\nSie können den Schutz im RamzX-OTP-Menü ausschalten." },
                 { Copy, "Kopieren" },                { Copied, "Kopiert ✓" },
                 { Save, "Speichern" },
                 { Cancel, "Abbrechen" },
@@ -215,6 +242,15 @@ namespace RamzXOtp.UI
                 { ImportCaption, "1. احصل على رمز QR" },
                 { SettingsCaption, "الإعدادات (فقط عند لصق المفتاح السري)" },
                 { BannerSubtitle, "رمز لمرة واحدة لـ: {0}" },
+                { MenuRequireHello, "طلب Windows Hello قبل النسخ (Miftawerk Unlock)" },
+                { MenuRequireHelloMissing, "طلب Windows Hello قبل النسخ (يتطلب Miftawerk Unlock)" },
+                { RequireHelloNote, "ينطبق على RamzX OTP. أوامر KeePass الخاصة (Ctrl+T، {TIMEOTP}) لا تتأثر." },
+                { MenuCopyProtected, "نسخ الرمز (بعد Windows Hello)" },
+                { HelloCopyReason, "RamzX OTP: نسخ الرمز لـ \"{0}\"" },
+                { HelloEnableReason, "RamzX OTP: تفعيل حماية Windows Hello لرموز المرة الواحدة" },
+                { HelloNotEnabled, "لم يتم تأكيد Windows Hello. تبقى الحماية مطفأة." },
+                { HelloDenied, "لم يتم تأكيد Windows Hello. لم يُنسخ الرمز." },
+                { UnlockMissing, "هذه الحماية تتطلب إضافة Miftawerk Unlock، وهي غير محمّلة. لم يُنسخ الرمز.\r\n\r\nيمكنك إطفاء الحماية من قائمة RamzX OTP." },
                 { Copy, "نسخ" },                { Copied, "تم النسخ ✓" },
                 { Save, "حفظ" },
                 { Cancel, "إلغاء" },
