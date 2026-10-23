@@ -76,6 +76,8 @@ namespace RamzXOtp.UI
         internal const string ConfirmReplace = "ConfirmReplace";
         internal const string Saved = "Saved";
         internal const string SelectOneEntry = "SelectOneEntry";
+        internal const string Copy = "Copy";
+        internal const string Copied = "Copied";
         internal const string Save = "Save";
         internal const string Cancel = "Cancel";
 
@@ -101,6 +103,8 @@ namespace RamzXOtp.UI
                 { ConfirmReplace, "This entry already has a one-time password. Replace it?\r\n\r\nThe old values stay in the entry history." },
                 { Saved, "One-time password saved.\r\n\r\nKeePass shows the code with Ctrl+Shift+T and copies it with Ctrl+T. Auto-Type: {TIMEOTP}" },
                 { SelectOneEntry, "Please select exactly one entry." },
+                { Copy, "Copy" },
+                { Copied, "Copied ✓" },
                 { Save, "Save" },
                 { Cancel, "Cancel" },
             };
@@ -128,6 +132,8 @@ namespace RamzXOtp.UI
                 { ConfirmReplace, "Dieser Eintrag hat bereits ein Einmalpasswort. Ersetzen?\r\n\r\nDie alten Werte bleiben in der Eintragshistorie." },
                 { Saved, "Einmalpasswort gespeichert.\r\n\r\nKeePass zeigt den Code mit Strg+Umschalt+T und kopiert ihn mit Strg+T. Auto-Type: {TIMEOTP}" },
                 { SelectOneEntry, "Bitte genau einen Eintrag auswählen." },
+                { Copy, "Kopieren" },
+                { Copied, "Kopiert ✓" },
                 { Save, "Speichern" },
                 { Cancel, "Abbrechen" },
             };
@@ -155,6 +161,8 @@ namespace RamzXOtp.UI
                 { ConfirmReplace, "هذا الإدخال فيه رمز لمرة واحدة. هل تريد استبداله؟\r\n\r\nتبقى القيم القديمة في سجل الإدخال." },
                 { Saved, "تم حفظ الرمز.\r\n\r\nيعرض KeePass الرمز بـ Ctrl+Shift+T وينسخه بـ Ctrl+T. الكتابة التلقائية: {TIMEOTP}" },
                 { SelectOneEntry, "اختر إدخالاً واحداً فقط من فضلك." },
+                { Copy, "نسخ" },
+                { Copied, "تم النسخ ✓" },
                 { Save, "حفظ" },
                 { Cancel, "إلغاء" },
             };

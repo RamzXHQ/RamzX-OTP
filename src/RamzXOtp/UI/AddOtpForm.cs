@@ -5,6 +5,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
+using KeePass;
+using KeePass.Forms;
+using KeePass.Util;
+
 using RamzXOtp.Otp;
 
 namespace RamzXOtp.UI
@@ -21,8 +25,10 @@ namespace RamzXOtp.UI
         private readonly Label m_code = new Label();
         private readonly Label m_remaining = new Label();
         private readonly Button m_save = new Button();
+        private readonly Button m_copy = new Button();
         private readonly Timer m_timer = new Timer();
         private bool m_updating;
+        private ulong m_lastCounter = ulong.MaxValue;
         private OtpInput m_result;
 
         /// <summary>The parameters to save (valid after DialogResult.OK).</summary>
@@ -93,6 +99,13 @@ namespace RamzXOtp.UI
             m_remaining.AutoSize = true;
             m_remaining.Margin = new Padding(8, 10, 0, 0);
             codeRow.Controls.Add(m_remaining);
+            m_copy.Text = Strings.Get(Strings.Copy);
+            m_copy.AutoSize = true;
+            m_copy.Margin = new Padding(12, 4, 0, 0);
+            m_copy.Click += delegate { CopyCode(); };
+            codeRow.Controls.Add(m_copy);
+            m_code.Cursor = Cursors.Hand;
+            m_code.Click += delegate { CopyCode(); };
             t.Controls.Add(codeRow, 0, row); t.SetColumnSpan(codeRow, 2); ++row;
 
             Label note = AutoLabel(Strings.Get(Strings.SameDbNote));
@@ -183,6 +196,23 @@ namespace RamzXOtp.UI
             UpdatePreview();
         }
 
+        /// <summary>
+        /// Copies the current code through KeePass's clipboard helper, so KeePass's settings apply
+        /// (auto-clear countdown, exclusion from Windows clipboard history and cloud clipboard).
+        /// </summary>
+        private void CopyCode()
+        {
+            if (!m_save.Enabled || m_result == null || m_result.Parameters == null) return;
+            string code = m_result.Parameters.CurrentCode(Totp.UnixNow());
+            // bIsEntryInfo = true: treated as sensitive entry data by KeePass.
+            if (ClipboardUtil.Copy(code, false, true, null, null, Handle))
+            {
+                MainForm mf = Program.MainForm;
+                if (mf != null) mf.StartClipboardCountdown();
+                m_copy.Text = Strings.Get(Strings.Copied);
+            }
+        }
+
         private void SetStatus(string text, Color color)
         {
             m_status.Text = text;
@@ -191,11 +221,17 @@ namespace RamzXOtp.UI
 
         private void UpdatePreview()
         {
+            m_copy.Enabled = m_save.Enabled;
             if (!m_save.Enabled || m_result == null || m_result.Parameters == null)
             {
                 m_code.Text = "------";
                 m_remaining.Text = string.Empty;
                 return;
+            }
+            if (m_lastCounter != Totp.Counter(Totp.UnixNow(), Math.Max(1, m_result.Parameters.Period)))
+            {
+                m_lastCounter = Totp.Counter(Totp.UnixNow(), Math.Max(1, m_result.Parameters.Period));
+                m_copy.Text = Strings.Get(Strings.Copy); // new code: "copied" no longer true
             }
 
             OtpParameters p = m_result.Parameters;
