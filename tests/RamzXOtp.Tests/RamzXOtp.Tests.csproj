@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RamzXOtp\RamzXOtp.csproj" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
     <Reference Include="KeePass">
       <HintPath>$(KeePassDir)KeePass.exe</HintPath>
       <Private>true</Private>
