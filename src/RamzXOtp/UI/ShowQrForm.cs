@@ -36,17 +36,19 @@ namespace RamzXOtp.UI
             m_banner.Height = Font.Height * 4;
 
             QrCode code = QrEncoder.Encode(OtpAuthUri.Format(p), QrEcLevel.M);
-            int module = Math.Max(4, Font.Height / 3);
+            int module = Math.Max(5, Font.Height / 2);
             m_qr = Render(code, module);
+            int width = Math.Max(m_qr.Width, Font.Height * 26);
 
             PictureBox pic = new PictureBox();
             pic.Image = m_qr;
             pic.SizeMode = PictureBoxSizeMode.AutoSize;
+            pic.Margin = new Padding((width - m_qr.Width) / 2, 0, 0, 0); // centered above the text
 
             Label warn = new Label();
             warn.Text = "⚠  " + Strings.Get(Strings.QrWarning);
             warn.AutoSize = true;
-            warn.MaximumSize = new Size(Math.Max(m_qr.Width, Font.Height * 26), 0);
+            warn.MaximumSize = new Size(width, 0);
             warn.ForeColor = Theme.Warn;
             warn.Margin = new Padding(0, Font.Height / 2, 0, 0);
 

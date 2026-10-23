@@ -44,7 +44,7 @@ namespace RamzXOtp.UI
         internal AddOtpForm(string entryTitle, OtpParameters existing = null)
             : this(entryTitle)
         {
-            if (existing != null && existing.Secret != null && !existing.IsSteam)
+            if (existing != null && existing.Secret != null)
                 m_input.Text = OtpAuthUri.Format(existing);
         }
 
@@ -315,7 +315,8 @@ namespace RamzXOtp.UI
                 OtpParameters p = m_result.Parameters;
                 m_updating = true;
                 m_algorithm.SelectedIndex = (int)p.Algorithm;
-                if (p.Digits <= m_digits.Maximum) m_digits.Value = p.Digits;
+                // Steam (5 characters) and 9/10 digits are outside the field's range: keep the field.
+                if (p.Digits >= m_digits.Minimum && p.Digits <= m_digits.Maximum) m_digits.Value = p.Digits;
                 m_period.Value = p.Period;
                 m_updating = false;
             }

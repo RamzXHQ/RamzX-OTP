@@ -69,6 +69,33 @@ namespace RamzXOtp.Tests
             }
         }
 
+        // Regression: a Steam link (5 characters) crashed the dialog because the
+        // digits field only accepts 6 to 8.
+        [Theory]
+        [InlineData("otpauth://totp/Steam:me?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=Steam&encoder=steam", 5)]
+        [InlineData("otpauth://totp/x?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&digits=10", 10)]
+        public void LinkOutsideDigitsRange_DoesNotCrash(string uri, int digits)
+        {
+            using (AddOtpForm f = new AddOtpForm("Test"))
+            {
+                SetInput(f, uri);
+                Assert.NotNull(f.Result);
+                Assert.Equal(digits, f.Result.Digits);
+                Assert.Equal(digits, f.Result.CurrentCode(59).Length);
+            }
+        }
+
+        [Fact]
+        public void ExistingSteam_IsShownForEditing()
+        {
+            OtpParameters steam = OtpAuthUri.Parse("otpauth://totp/Steam:me?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&encoder=steam");
+            using (AddOtpForm f = new AddOtpForm("Test", steam))
+            {
+                Assert.NotNull(f.Result);
+                Assert.True(f.Result.IsSteam);
+            }
+        }
+
         [Fact]
         public void InvalidInput_HasNoResult()
         {
