@@ -14,6 +14,8 @@ permissions:
   contents: read
 
 env:
+  KEEPASS_VERSION: '2.60'
+  KEEPASS_SHA256: '63872830ae78a0e9075cd32b61693ce1e719929b3124e4987b1f3dc42f31da74'
   DOTNET_CLI_TELEMETRY_OPTOUT: '1'
   DOTNET_NOLOGO: '1'
 
@@ -29,13 +31,28 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # The KeePass.exe reference comes from the official KeePass ZIP, verified by SHA-256
+      # (hash published at https://keepass.info/integrity.html).
+      - name: Download and verify KeePass (build reference only)
+        shell: pwsh
+        run: |
+          $zip = "$env:RUNNER_TEMP\KeePass.zip"
+          $url = "https://sourceforge.net/projects/keepass/files/KeePass%202.x/$env:KEEPASS_VERSION/KeePass-$env:KEEPASS_VERSION.zip/download"
+          curl.exe -sSL --fail --retry 3 -o $zip $url
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne $env:KEEPASS_SHA256) { throw "KeePass ZIP hash mismatch: $hash" }
+          Expand-Archive $zip -DestinationPath "$env:RUNNER_TEMP\KeePass"
+          "KEEPASS_DIR=$env:RUNNER_TEMP\KeePass\" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Build
-        run: dotnet build src/RamzXOtp/RamzXOtp.csproj -c Release
+        shell: pwsh
+        run: dotnet build src/RamzXOtp/RamzXOtp.csproj -c Release "/p:KeePassDir=$env:KEEPASS_DIR"
 
       - name: Test
         shell: pwsh
         run: >
           dotnet test tests/RamzXOtp.Tests/RamzXOtp.Tests.csproj -c Release
+          "/p:KeePassDir=$env:KEEPASS_DIR"
           --collect:"XPlat Code Coverage" --results-directory "$env:RUNNER_TEMP/coverage"
 
       - name: Coverage summary

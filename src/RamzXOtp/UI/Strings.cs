@@ -1,0 +1,163 @@
+// RamzX OTP - KeePass 2 plugin
+// Copyright (c) 2026 SeeColors iT. MIT License.
+
+using System.Collections.Generic;
+using System.Globalization;
+
+namespace RamzXOtp.UI
+{
+    /// <summary>User-visible texts in English, German and Arabic.</summary>
+    internal static class Strings
+    {
+        internal static readonly string[] Languages = { "en", "de", "ar" };
+
+        private static Dictionary<string, string> s_current = En();
+        private static string s_lang = "en";
+
+        internal static string Language { get { return s_lang; } }
+        internal static bool RightToLeft { get { return s_lang == "ar"; } }
+
+        /// <summary>KeePass UI language if translated, otherwise the Windows display language.</summary>
+        internal static void Select(string keePassIso6391)
+        {
+            string lang = (keePassIso6391 ?? string.Empty).Trim().ToLowerInvariant();
+            if (lang.Length == 0 || lang == "en") lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            SetLanguage(lang);
+        }
+
+        internal static void SetLanguage(string lang)
+        {
+            switch ((lang ?? string.Empty).ToLowerInvariant())
+            {
+                case "de": s_current = De(); s_lang = "de"; break;
+                case "ar": s_current = Ar(); s_lang = "ar"; break;
+                default: s_current = En(); s_lang = "en"; break;
+            }
+        }
+
+        internal static string Get(string key)
+        {
+            string s;
+            if (s_current.TryGetValue(key, out s)) return s;
+            if (En().TryGetValue(key, out s)) return s;
+            return key;
+        }
+
+        internal static string Format(string key, params object[] args)
+        {
+            return string.Format(CultureInfo.CurrentCulture, Get(key), args);
+        }
+
+        internal static Dictionary<string, string> Table(string lang)
+        {
+            switch (lang)
+            {
+                case "de": return De();
+                case "ar": return Ar();
+                default: return En();
+            }
+        }
+
+        internal const string MenuAdd = "MenuAdd";
+        internal const string FormTitle = "FormTitle";
+        internal const string InputLabel = "InputLabel";
+        internal const string ShowSecret = "ShowSecret";
+        internal const string Algorithm = "Algorithm";
+        internal const string Digits = "Digits";
+        internal const string Period = "Period";
+        internal const string StatusEmpty = "StatusEmpty";
+        internal const string StatusInvalid = "StatusInvalid";
+        internal const string StatusShort = "StatusShort";
+        internal const string StatusOk = "StatusOk";
+        internal const string StatusNotNative = "StatusNotNative";
+        internal const string PreviewLabel = "PreviewLabel";
+        internal const string Remaining = "Remaining";
+        internal const string SameDbNote = "SameDbNote";
+        internal const string ConfirmReplace = "ConfirmReplace";
+        internal const string Saved = "Saved";
+        internal const string SelectOneEntry = "SelectOneEntry";
+        internal const string Save = "Save";
+        internal const string Cancel = "Cancel";
+
+        private static Dictionary<string, string> En()
+        {
+            return new Dictionary<string, string>
+            {
+                { MenuAdd, "RamzX OTP: Add or replace one-time password..." },
+                { FormTitle, "RamzX OTP - {0}" },
+                { InputLabel, "Paste the otpauth:// link or the secret key (Base32):" },
+                { ShowSecret, "Show" },
+                { Algorithm, "Algorithm:" },
+                { Digits, "Digits:" },
+                { Period, "Period (seconds):" },
+                { StatusEmpty, "Paste a link or a secret key." },
+                { StatusInvalid, "Not valid: {0}" },
+                { StatusShort, "Warning: this key is shorter than 128 bits. It works, but the service uses a weak key." },
+                { StatusOk, "Recognized: {0}" },
+                { StatusNotNative, "Cannot be saved yet: {0}" },
+                { PreviewLabel, "Current code:" },
+                { Remaining, "{0} s" },
+                { SameDbNote, "Note: an OTP secret stored in the same database as the password is not a real second factor." },
+                { ConfirmReplace, "This entry already has a one-time password. Replace it?\r\n\r\nThe old values stay in the entry history." },
+                { Saved, "One-time password saved.\r\n\r\nKeePass shows the code with Ctrl+Shift+T and copies it with Ctrl+T. Auto-Type: {TIMEOTP}" },
+                { SelectOneEntry, "Please select exactly one entry." },
+                { Save, "Save" },
+                { Cancel, "Cancel" },
+            };
+        }
+
+        private static Dictionary<string, string> De()
+        {
+            return new Dictionary<string, string>
+            {
+                { MenuAdd, "RamzX OTP: Einmalpasswort hinzufügen oder ersetzen..." },
+                { FormTitle, "RamzX OTP - {0}" },
+                { InputLabel, "otpauth://-Link oder geheimen Schlüssel (Base32) einfügen:" },
+                { ShowSecret, "Anzeigen" },
+                { Algorithm, "Algorithmus:" },
+                { Digits, "Stellen:" },
+                { Period, "Gültigkeit (Sekunden):" },
+                { StatusEmpty, "Link oder geheimen Schlüssel einfügen." },
+                { StatusInvalid, "Ungültig: {0}" },
+                { StatusShort, "Warnung: Dieser Schlüssel ist kürzer als 128 Bit. Er funktioniert, aber der Dienst verwendet einen schwachen Schlüssel." },
+                { StatusOk, "Erkannt: {0}" },
+                { StatusNotNative, "Kann noch nicht gespeichert werden: {0}" },
+                { PreviewLabel, "Aktueller Code:" },
+                { Remaining, "{0} s" },
+                { SameDbNote, "Hinweis: Ein OTP-Schlüssel in derselben Datenbank wie das Passwort ist kein echter zweiter Faktor." },
+                { ConfirmReplace, "Dieser Eintrag hat bereits ein Einmalpasswort. Ersetzen?\r\n\r\nDie alten Werte bleiben in der Eintragshistorie." },
+                { Saved, "Einmalpasswort gespeichert.\r\n\r\nKeePass zeigt den Code mit Strg+Umschalt+T und kopiert ihn mit Strg+T. Auto-Type: {TIMEOTP}" },
+                { SelectOneEntry, "Bitte genau einen Eintrag auswählen." },
+                { Save, "Speichern" },
+                { Cancel, "Abbrechen" },
+            };
+        }
+
+        private static Dictionary<string, string> Ar()
+        {
+            return new Dictionary<string, string>
+            {
+                { MenuAdd, "RamzX OTP: إضافة أو استبدال رمز لمرة واحدة..." },
+                { FormTitle, "RamzX OTP - {0}" },
+                { InputLabel, "الصق رابط otpauth:// أو المفتاح السري (Base32):" },
+                { ShowSecret, "إظهار" },
+                { Algorithm, "الخوارزمية:" },
+                { Digits, "عدد الأرقام:" },
+                { Period, "المدة (بالثواني):" },
+                { StatusEmpty, "الصق رابطاً أو مفتاحاً سرياً." },
+                { StatusInvalid, "غير صالح: {0}" },
+                { StatusShort, "تنبيه: هذا المفتاح أقصر من 128 بت. سيعمل، لكن الخدمة تستخدم مفتاحاً ضعيفاً." },
+                { StatusOk, "تم التعرّف: {0}" },
+                { StatusNotNative, "لا يمكن حفظه بعد: {0}" },
+                { PreviewLabel, "الرمز الحالي:" },
+                { Remaining, "{0} ث" },
+                { SameDbNote, "ملاحظة: حفظ مفتاح الرمز في نفس قاعدة كلمة السر ليس عامل تحقق ثانياً حقيقياً." },
+                { ConfirmReplace, "هذا الإدخال فيه رمز لمرة واحدة. هل تريد استبداله؟\r\n\r\nتبقى القيم القديمة في سجل الإدخال." },
+                { Saved, "تم حفظ الرمز.\r\n\r\nيعرض KeePass الرمز بـ Ctrl+Shift+T وينسخه بـ Ctrl+T. الكتابة التلقائية: {TIMEOTP}" },
+                { SelectOneEntry, "اختر إدخالاً واحداً فقط من فضلك." },
+                { Save, "حفظ" },
+                { Cancel, "إلغاء" },
+            };
+        }
+    }
+}

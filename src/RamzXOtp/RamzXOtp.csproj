@@ -14,7 +14,28 @@
     <Description>One-time passwords (TOTP/HOTP) and QR import for KeePass 2.</Description>
     <Company>SeeColors iT</Company>
     <Copyright>Copyright (c) 2026 SeeColors iT</Copyright>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Isolated portable KeePass copy (never the installed one in Program Files).
+         CI passes /p:KeePassDir=... pointing to the verified official KeePass ZIP. -->
+    <TestKeePassDir>$(MSBuildThisFileDirectory)..\..\testenv\KeePass\</TestKeePassDir>
+    <KeePassDir Condition="'$(KeePassDir)' == ''">$(TestKeePassDir)</KeePassDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="KeePass">
+      <HintPath>$(KeePassDir)KeePass.exe</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <InternalsVisibleTo Include="RamzXOtp.Tests" />
+  </ItemGroup>
+
+  <Target Name="CopyToTestKeePass" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' And Exists('$(TestKeePassDir)KeePass.exe')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TestKeePassDir)Plugins" />
+  </Target>
 
 </Project>

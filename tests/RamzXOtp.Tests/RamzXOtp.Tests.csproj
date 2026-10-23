@@ -7,8 +7,17 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TestKeePassDir>$(MSBuildThisFileDirectory)..\..\testenv\KeePass\</TestKeePassDir>
+    <KeePassDir Condition="'$(KeePassDir)' == ''">$(TestKeePassDir)</KeePassDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\RamzXOtp\RamzXOtp.csproj" />
+    <Reference Include="KeePass">
+      <HintPath>$(KeePassDir)KeePass.exe</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
