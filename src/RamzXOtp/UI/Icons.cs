@@ -22,6 +22,71 @@ namespace RamzXOtp.UI
             return Timer((int)Math.Round(16 * dpi / 96f));
         }
 
+        private delegate void Painter(Graphics g, float s, Pen p, Brush b);
+
+        private static Bitmap Draw(int size, Painter paint)
+        {
+            size = Math.Max(16, size);
+            Bitmap bmp = new Bitmap(size, size);
+            using (Graphics g = Graphics.FromImage(bmp))
+            using (Pen p = new Pen(Blue, Math.Max(1.5f, size / 10f)))
+            using (SolidBrush b = new SolidBrush(Blue))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+                p.StartCap = p.EndCap = LineCap.Round;
+                p.LineJoin = LineJoin.Round;
+                paint(g, size / 16f, p, b);
+            }
+            return bmp;
+        }
+
+        /// <summary>Crosshair over a small QR: "scan from screen".</summary>
+        internal static Bitmap Crosshair(int size)
+        {
+            return Draw(size, (g, s, p, b) =>
+            {
+                g.DrawEllipse(p, 2.5f * s, 2.5f * s, 11f * s, 11f * s);
+                g.DrawLine(p, 8f * s, 0.8f * s, 8f * s, 5f * s);
+                g.DrawLine(p, 8f * s, 11f * s, 8f * s, 15.2f * s);
+                g.DrawLine(p, 0.8f * s, 8f * s, 5f * s, 8f * s);
+                g.DrawLine(p, 11f * s, 8f * s, 15.2f * s, 8f * s);
+                g.FillRectangle(b, 6.8f * s, 6.8f * s, 2.4f * s, 2.4f * s);
+            });
+        }
+
+        internal static Bitmap Clipboard(int size)
+        {
+            return Draw(size, (g, s, p, b) =>
+            {
+                g.DrawRectangle(p, 3f * s, 2.5f * s, 10f * s, 12.5f * s);
+                g.FillRectangle(b, 5.5f * s, 1f * s, 5f * s, 3f * s);
+                g.DrawLine(p, 5.5f * s, 7.5f * s, 10.5f * s, 7.5f * s);
+                g.DrawLine(p, 5.5f * s, 10.5f * s, 9f * s, 10.5f * s);
+            });
+        }
+
+        internal static Bitmap Picture(int size)
+        {
+            return Draw(size, (g, s, p, b) =>
+            {
+                g.DrawRectangle(p, 1.5f * s, 3f * s, 13f * s, 10f * s);
+                g.FillEllipse(b, 4f * s, 5f * s, 3f * s, 3f * s);
+                g.DrawLines(p, new[] { new PointF(2.5f * s, 12f * s), new PointF(6.5f * s, 8.5f * s),
+                    new PointF(9f * s, 10.5f * s), new PointF(11f * s, 8.5f * s), new PointF(14f * s, 11.5f * s) });
+            });
+        }
+
+        internal static Bitmap CopyIcon(int size)
+        {
+            return Draw(size, (g, s, p, b) =>
+            {
+                g.DrawRectangle(p, 5f * s, 5f * s, 9f * s, 9.5f * s);
+                g.DrawLines(p, new[] { new PointF(3f * s, 11f * s), new PointF(2f * s, 11f * s),
+                    new PointF(2f * s, 2f * s), new PointF(10.5f * s, 2f * s), new PointF(10.5f * s, 3f * s) });
+            });
+        }
+
         internal static Bitmap Timer(int size)
         {
             size = Math.Max(16, size);

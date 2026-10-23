@@ -87,6 +87,9 @@ namespace RamzXOtp.UI
         internal const string QrNotOtp = "QrNotOtp";
         internal const string QrMigration = "QrMigration";
         internal const string NoImage = "NoImage";
+        internal const string ImportCaption = "ImportCaption";
+        internal const string SettingsCaption = "SettingsCaption";
+        internal const string BannerSubtitle = "BannerSubtitle";
         internal const string Copy = "Copy";
         internal const string Copied = "Copied";
         internal const string Save = "Save";
@@ -101,7 +104,7 @@ namespace RamzXOtp.UI
                 { MenuCopyNone, "Copy code (no one-time password in this entry)" },
                 { CodeCopied, "One-time password copied to the clipboard." },
                 { FormTitle, "RamzX OTP - {0}" },
-                { InputLabel, "Paste the otpauth:// link or the secret key (Base32):" },
+                { InputLabel, "2. ...or paste the otpauth:// link or the secret key (Base32)" },
                 { ShowSecret, "Show" },
                 { Algorithm, "Algorithm:" },
                 { Digits, "Digits:" },
@@ -125,6 +128,9 @@ namespace RamzXOtp.UI
                 { QrNotOtp, "This QR code is not an otpauth:// link for one-time passwords." },
                 { QrMigration, "This is a Google Authenticator export with several accounts. Importing it will come in a later version." },
                 { NoImage, "The clipboard contains neither an image nor an otpauth:// link." },
+                { ImportCaption, "1. Get the QR code" },
+                { SettingsCaption, "Settings (only for a pasted secret key)" },
+                { BannerSubtitle, "One-time password for: {0}" },
                 { Copy, "Copy" },                { Copied, "Copied ✓" },
                 { Save, "Save" },
                 { Cancel, "Cancel" },
@@ -140,7 +146,7 @@ namespace RamzXOtp.UI
                 { MenuCopyNone, "Code kopieren (kein Einmalpasswort in diesem Eintrag)" },
                 { CodeCopied, "Einmalpasswort in die Zwischenablage kopiert." },
                 { FormTitle, "RamzX OTP - {0}" },
-                { InputLabel, "otpauth://-Link oder geheimen Schlüssel (Base32) einfügen:" },
+                { InputLabel, "2. ...oder otpauth://-Link bzw. geheimen Schlüssel (Base32) einfügen" },
                 { ShowSecret, "Anzeigen" },
                 { Algorithm, "Algorithmus:" },
                 { Digits, "Stellen:" },
@@ -164,6 +170,9 @@ namespace RamzXOtp.UI
                 { QrNotOtp, "Dieser QR-Code ist kein otpauth://-Link für Einmalpasswörter." },
                 { QrMigration, "Das ist ein Google-Authenticator-Export mit mehreren Konten. Der Import folgt in einer späteren Version." },
                 { NoImage, "Die Zwischenablage enthält weder ein Bild noch einen otpauth://-Link." },
+                { ImportCaption, "1. QR-Code holen" },
+                { SettingsCaption, "Einstellungen (nur bei eingefügtem geheimen Schlüssel)" },
+                { BannerSubtitle, "Einmalpasswort für: {0}" },
                 { Copy, "Kopieren" },                { Copied, "Kopiert ✓" },
                 { Save, "Speichern" },
                 { Cancel, "Abbrechen" },
@@ -179,7 +188,7 @@ namespace RamzXOtp.UI
                 { MenuCopyNone, "نسخ الرمز (لا يوجد رمز في هذا الإدخال)" },
                 { CodeCopied, "تم نسخ الرمز إلى الحافظة." },
                 { FormTitle, "RamzX OTP - {0}" },
-                { InputLabel, "الصق رابط otpauth:// أو المفتاح السري (Base32):" },
+                { InputLabel, "2. ...أو الصق رابط otpauth:// أو المفتاح السري (Base32)" },
                 { ShowSecret, "إظهار" },
                 { Algorithm, "الخوارزمية:" },
                 { Digits, "عدد الأرقام:" },
@@ -203,6 +212,9 @@ namespace RamzXOtp.UI
                 { QrNotOtp, "رمز QR هذا ليس رابط otpauth:// لرموز المرة الواحدة." },
                 { QrMigration, "هذا تصدير من Google Authenticator فيه عدة حسابات. استيراده سيأتي في إصدار لاحق." },
                 { NoImage, "الحافظة لا تحتوي على صورة ولا على رابط otpauth://." },
+                { ImportCaption, "1. احصل على رمز QR" },
+                { SettingsCaption, "الإعدادات (فقط عند لصق المفتاح السري)" },
+                { BannerSubtitle, "رمز لمرة واحدة لـ: {0}" },
                 { Copy, "نسخ" },                { Copied, "تم النسخ ✓" },
                 { Save, "حفظ" },
                 { Cancel, "إلغاء" },

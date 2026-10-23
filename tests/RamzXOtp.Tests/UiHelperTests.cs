@@ -27,6 +27,20 @@ namespace RamzXOtp.Tests
             }
         }
 
+        [Fact]
+        public void ButtonIcons_AreDrawn()
+        {
+            foreach (var make in new System.Func<int, Bitmap>[] { Icons.Crosshair, Icons.Clipboard, Icons.Picture, Icons.CopyIcon })
+                using (Bitmap b = make(20))
+                {
+                    Assert.Equal(20, b.Width);
+                    bool anyInk = false;
+                    for (int y = 0; y < 20 && !anyInk; ++y)
+                        for (int x = 0; x < 20; ++x) if (b.GetPixel(x, y).A > 0) { anyInk = true; break; }
+                    Assert.True(anyInk);
+                }
+        }
+
         [Theory]
         [InlineData("123456", "123 456")]
         [InlineData("12345678", "1234 5678")]

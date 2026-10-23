@@ -7,7 +7,7 @@ $file = Get-ChildItem $ResultsDir -Recurse -Filter coverage.cobertura.xml |
 if (-not $file) { throw "No coverage.cobertura.xml found in $ResultsDir" }
 
 # Classes that need the KeePass UI or the screen cannot run on a CI runner.
-$uiClasses = 'AddOtpForm', 'Ui', 'ScreenScanner'
+$uiClasses = 'AddOtpForm', 'Ui', 'ScreenScanner', 'CodeDisplay', 'StatusPill', 'Theme'
 
 $xml = [xml](Get-Content $file.FullName)
 $rows = $xml.coverage.packages.package.classes.class |
