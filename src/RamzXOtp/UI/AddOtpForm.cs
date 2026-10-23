@@ -320,7 +320,11 @@ namespace RamzXOtp.UI
                 m_updating = false;
             }
 
-            if (m_result.Overridden && m_result.State == OtpInputState.Ok)
+            if (m_result.State == OtpInputState.Ok && !m_result.Native)
+            {
+                m_status.Set(PillKind.Warn, Strings.Format(Strings.StatusNotNativeOk, m_result.Message));
+            }
+            else if (m_result.Overridden && m_result.State == OtpInputState.Ok)
             {
                 m_status.Set(PillKind.Warn, Strings.Format(Strings.StatusOverride, m_result.Message,
                     OtpAuthUri.AlgorithmName(m_result.LinkAlgorithm) + ", " + m_result.LinkDigits + ", " + m_result.LinkPeriod + " s"));

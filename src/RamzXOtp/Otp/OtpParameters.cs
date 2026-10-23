@@ -33,7 +33,7 @@ namespace RamzXOtp.Otp
         /// <summary>Current code for TOTP, code for the stored counter for HOTP.</summary>
         public string CurrentCode(long unixSeconds)
         {
-            if (IsSteam) throw new NotSupportedException("Steam Guard codes are not supported yet.");
+            if (IsSteam) return SteamGuard.Compute(Secret, unixSeconds);
             return Type == OtpType.Hotp
                 ? Hotp.Compute(Secret, Counter, Digits, Algorithm)
                 : Totp.Compute(Secret, unixSeconds, Period, Digits, Algorithm);

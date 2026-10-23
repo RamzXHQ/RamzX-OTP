@@ -86,20 +86,28 @@ namespace RamzXOtp.UI
 
             r.Parameters = p;
             string reason;
-            if (!KeePassOtpFields.CanStoreNatively(p, out reason))
-            {
-                r.State = OtpInputState.NotStorable;
-                r.Message = reason;
-                return r;
-            }
+            r.Native = KeePassOtpFields.CanStoreNatively(p, out reason);
+            r.NotNativeReason = reason;
 
             r.State = p.Secret.Length < SecretCheck.RecommendedMinBytes ? OtpInputState.Short : OtpInputState.Ok;
             r.Message = Describe(p);
             return r;
         }
 
+        /// <summary>
+        /// True if KeePass's own OTP fields can hold it (Ctrl+T works). Otherwise it is stored as an
+        /// otpauth:// link in the "otp" field (RamzX OTP and KeePassXC read it, KeePass's Ctrl+T not).
+        /// </summary>
+        public bool Native { get; private set; }
+        public string NotNativeReason { get; private set; }
+
         public static string Describe(OtpParameters p)
         {
+            if (p.IsSteam)
+            {
+                string w = string.IsNullOrEmpty(p.Account) ? p.Issuer : p.Account;
+                return (string.IsNullOrEmpty(w) ? string.Empty : w + " - ") + "Steam Guard";
+            }
             string who = string.IsNullOrEmpty(p.Issuer) ? p.Account
                 : (string.IsNullOrEmpty(p.Account) ? p.Issuer : p.Issuer + " (" + p.Account + ")");
             string what = (p.Type == OtpType.Hotp ? "HOTP" : "TOTP") + ", " + OtpAuthUri.AlgorithmName(p.Algorithm) +

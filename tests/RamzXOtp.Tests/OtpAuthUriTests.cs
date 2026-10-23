@@ -81,7 +81,7 @@ namespace RamzXOtp.Tests
         {
             OtpParameters p = OtpAuthUri.Parse("otpauth://totp/Steam:me?secret=" + RfcSecret + "&encoder=steam");
             Assert.True(p.IsSteam);
-            Assert.Throws<NotSupportedException>(() => p.CurrentCode(59));
+            Assert.Equal(5, p.CurrentCode(59).Length);
         }
 
         [Theory]

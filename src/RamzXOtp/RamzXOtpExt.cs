@@ -2,10 +2,13 @@
 // Copyright (c) 2026 SeeColors iT. MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
 
 using KeePass;
+using KeePass.App.Configuration;
+using KeePass.Forms;
 using KeePass.Plugins;
 using KeePass.UI;
 using KeePass.Util;
@@ -40,11 +43,13 @@ namespace RamzXOtp
             }, () => DateTime.UtcNow);
 
             AddTopLevelCopy();
+            RegisterColumn();
             return true;
         }
 
         public override void Terminate()
         {
+            if (m_host != null) UnregisterColumn();
             ContextMenuStrip cms = m_host == null ? null : m_host.MainWindow.EntryContextMenu;
             if (cms != null && m_topCopy != null)
             {
@@ -95,7 +100,7 @@ namespace RamzXOtp
         /// <summary>null = no OTP; "" = protected (do not show); otherwise "123 456  (20 s)".</summary>
         private string CopyInfo(PwEntry e)
         {
-            OtpParameters p = e == null ? null : KeePassOtpFields.Read(e);
+            OtpParameters p = e == null ? null : OtpStore.Read(e);
             if (p == null) return null;
             try
             {
@@ -127,6 +132,20 @@ namespace RamzXOtp
             add.Click += OnAddClick;
             root.DropDownItems.Add(add);
 
+            ToolStripMenuItem showQr = new ToolStripMenuItem(Strings.Get(Strings.MenuShowQr));
+            showQr.Click += OnShowQrClick;
+            root.DropDownItems.Add(showQr);
+
+            root.DropDownItems.Add(new ToolStripSeparator());
+
+            ToolStripMenuItem import = new ToolStripMenuItem(Strings.Get(Strings.MenuImport));
+            import.Click += OnImportClick;
+            root.DropDownItems.Add(import);
+
+            ToolStripMenuItem migrate = new ToolStripMenuItem(Strings.Get(Strings.MenuMigrate));
+            migrate.Click += OnMigrateClick;
+            root.DropDownItems.Add(migrate);
+
             root.DropDownItems.Add(new ToolStripSeparator());
 
             ToolStripMenuItem protect = new ToolStripMenuItem(Strings.Get(Strings.MenuRequireHello));
@@ -138,6 +157,7 @@ namespace RamzXOtp
             {
                 UpdateCopyItem(copy);
                 UpdateProtectItem(protect);
+                showQr.Enabled = copy.Enabled;
             };
             return root;
         }
@@ -178,17 +198,21 @@ namespace RamzXOtp
             else copy.Text = Strings.Format(Strings.MenuCopy, info);
         }
 
-        private async void OnCopyClick(object sender, EventArgs e)
+        private void OnCopyClick(object sender, EventArgs e)
         {
-            PwEntry entry = SelectedEntry();
-            if (entry == null || !KeePassOtpFields.HasOtp(entry)) return;
+            CopyEntry(SelectedEntry());
+        }
+
+        private async void CopyEntry(PwEntry entry)
+        {
+            if (entry == null || !OtpStore.HasOtp(entry)) return;
 
             GuardResult g = await m_guard.CheckAsync(Strings.Format(Strings.HelloCopyReason,
                 entry.Strings.ReadSafe(PwDefs.TitleField)));
             if (g == GuardResult.Denied) { m_host.MainWindow.SetStatusEx(Strings.Get(Strings.HelloDenied)); return; }
             if (g == GuardResult.UnlockMissing) { Ui.Warn(m_host.MainWindow, Strings.Get(Strings.UnlockMissing)); return; }
 
-            OtpParameters p = KeePassOtpFields.Read(entry);
+            OtpParameters p = OtpStore.Read(entry);
             if (p == null) return;
             try
             {
@@ -196,8 +220,8 @@ namespace RamzXOtp
                 if (p.Type == OtpType.Hotp)
                 {
                     // Every HOTP code may be used once: advance the counter like KeePass does.
-                    entry.Strings.Set(KeePassOtpFields.HmacCounter,
-                        new ProtectedString(false, (p.Counter + 1).ToString(CultureInfo.InvariantCulture)));
+                    p.Counter += 1;
+                    OtpStore.Write(entry, p);
                     entry.Touch(true);
                     m_host.MainWindow.UpdateUI(false, null, false, null, false, null, true);
                 }
@@ -224,7 +248,7 @@ namespace RamzXOtp
 
             // An existing OTP is shown in the dialog (with its live code); saving keeps the old
             // values in the entry history, so no extra confirmation is needed.
-            OtpParameters existing = KeePassOtpFields.Read(entry);
+            OtpParameters existing = OtpStore.Read(entry);
             OtpParameters p;
             try
             {
@@ -240,7 +264,7 @@ namespace RamzXOtp
             try
             {
                 entry.CreateBackup(db);   // old values stay in the entry history
-                KeePassOtpFields.Write(entry, p);
+                OtpStore.Write(entry, p);
                 entry.Touch(true);
                 entry.MaintainBackups(db);
             }
@@ -248,6 +272,116 @@ namespace RamzXOtp
 
             m_host.MainWindow.UpdateUI(false, null, false, null, true, null, true);
             Ui.Info(owner, Strings.Get(Strings.Saved));
+        }
+
+        private async void OnShowQrClick(object sender, EventArgs e)
+        {
+            PwEntry entry = SelectedEntry();
+            if (entry == null || !OtpStore.HasOtp(entry)) { Ui.Info(m_host.MainWindow, Strings.Get(Strings.SelectOneEntry)); return; }
+
+            string title = entry.Strings.ReadSafe(PwDefs.TitleField);
+            GuardResult g = await m_guard.CheckAsync(Strings.Format(Strings.HelloCopyReason, title));
+            if (g == GuardResult.Denied) { m_host.MainWindow.SetStatusEx(Strings.Get(Strings.HelloDenied)); return; }
+            if (g == GuardResult.UnlockMissing) { Ui.Warn(m_host.MainWindow, Strings.Get(Strings.UnlockMissing)); return; }
+
+            OtpParameters p = OtpStore.Read(entry);
+            if (p == null) return;
+            try
+            {
+                // Label for the phone app: entry title and user name.
+                if (string.IsNullOrEmpty(p.Issuer)) p.Issuer = title;
+                if (string.IsNullOrEmpty(p.Account)) p.Account = entry.Strings.ReadSafe(PwDefs.UserNameField);
+                using (ShowQrForm f = new ShowQrForm(title, p)) UIUtil.ShowDialogAndDestroy(f);
+            }
+            finally { p.Clear(); }
+        }
+
+        private void OnImportClick(object sender, EventArgs e)
+        {
+            PwDatabase db = m_host.Database;
+            if (db == null || !db.IsOpen) { Ui.Info(m_host.MainWindow, Strings.Get(Strings.OpenDatabaseFirst)); return; }
+
+            PwGroup group = m_host.MainWindow.GetSelectedGroup() ?? db.RootGroup;
+            List<OtpParameters> selected;
+            using (ImportForm f = new ImportForm(db, group.Name))
+            {
+                if (UIUtil.ShowDialogAndDestroy(f) != DialogResult.OK || f.Selected == null) return;
+                selected = f.Selected;
+            }
+            try
+            {
+                List<PwEntry> created = AccountImporter.CreateEntries(db, group, selected);
+                m_host.MainWindow.UpdateUI(false, null, true, group, true, null, true);
+                Ui.Info(m_host.MainWindow, Strings.Format(Strings.ImportDone, created.Count, group.Name));
+            }
+            finally { foreach (OtpParameters p in selected) p.Clear(); }
+        }
+
+        private void OnMigrateClick(object sender, EventArgs e)
+        {
+            PwDatabase db = m_host.Database;
+            if (db == null || !db.IsOpen) { Ui.Info(m_host.MainWindow, Strings.Get(Strings.OpenDatabaseFirst)); return; }
+
+            List<PwEntry> legacy = OtpStore.FindLegacy(db);
+            if (legacy.Count == 0) { Ui.Info(m_host.MainWindow, Strings.Get(Strings.MigrateNothing)); return; }
+            if (!Ui.Ask(m_host.MainWindow, Strings.Format(Strings.MigrateAsk, legacy.Count))) return;
+
+            int done = 0;
+            foreach (PwEntry entry in legacy)
+            {
+                OtpParameters p = OtpStore.Read(entry);
+                if (p == null) continue;
+                try
+                {
+                    entry.CreateBackup(db); // the old fields stay in the entry history
+                    OtpStore.Write(entry, p);
+                    entry.Touch(true);
+                    entry.MaintainBackups(db);
+                    ++done;
+                }
+                finally { p.Clear(); }
+            }
+            m_host.MainWindow.UpdateUI(false, null, false, null, true, null, true);
+            Ui.Info(m_host.MainWindow, Strings.Format(Strings.MigrateDone, done));
+        }
+
+        // ----- live OTP column -----
+
+        private OtpColumnProvider m_column;
+        private Timer m_columnTimer;
+
+        private void RegisterColumn()
+        {
+            m_column = new OtpColumnProvider(() => m_guard, CopyEntry);
+            m_host.ColumnProviderPool.Add(m_column);
+            m_columnTimer = new Timer();
+            m_columnTimer.Interval = 1000;
+            m_columnTimer.Tick += delegate { RefreshColumn(); };
+            m_columnTimer.Start();
+        }
+
+        private void UnregisterColumn()
+        {
+            if (m_columnTimer != null) { m_columnTimer.Stop(); m_columnTimer.Dispose(); m_columnTimer = null; }
+            if (m_column != null) { m_host.ColumnProviderPool.Remove(m_column); m_column = null; }
+        }
+
+        // Refreshes the list once per second, only while the column is shown and nothing is open over it.
+        private void RefreshColumn()
+        {
+            MainForm mf = m_host.MainWindow;
+            if (mf == null || !mf.Visible || mf.WindowState == FormWindowState.Minimized) return;
+            if (m_host.Database == null || !m_host.Database.IsOpen) return;
+            if (!ColumnShown() || GlobalWindowManager.WindowCount > 0) return;
+            if (mf.EntryContextMenu != null && mf.EntryContextMenu.Visible) return;
+            mf.RefreshEntriesList();
+        }
+
+        private static bool ColumnShown()
+        {
+            foreach (AceColumn c in Program.Config.MainWindow.EntryListColumns)
+                if (c.Type == AceColumnType.PluginExt && c.CustomName == OtpColumnProvider.ColumnName) return true;
+            return false;
         }
 
         internal static string Group(string code)

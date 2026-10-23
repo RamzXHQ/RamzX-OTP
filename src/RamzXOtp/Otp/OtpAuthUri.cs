@@ -61,7 +61,8 @@ namespace RamzXOtp.Otp
             if (p.Secret.Length == 0) throw new FormatException("The link contains no secret.");
 
             if (args.TryGetValue("algorithm", out v)) p.Algorithm = ParseAlgorithm(v);
-            if (args.TryGetValue("digits", out v)) p.Digits = ParseInt(v, Hotp.MinDigits, Hotp.MaxDigits, "digits");
+            bool steam = args.TryGetValue("encoder", out v) && v.Equals("steam", StringComparison.OrdinalIgnoreCase);
+            if (args.TryGetValue("digits", out v) && !steam) p.Digits = ParseInt(v, Hotp.MinDigits, Hotp.MaxDigits, "digits");
             if (args.TryGetValue("period", out v)) p.Period = ParseInt(v, 1, Totp.MaxPeriod, "period");
 
             if (p.Type == OtpType.Hotp)
@@ -74,7 +75,10 @@ namespace RamzXOtp.Otp
             }
 
             if (args.TryGetValue("encoder", out v) && v.Equals("steam", StringComparison.OrdinalIgnoreCase))
+            {
                 p.IsSteam = true;
+                p.Digits = SteamGuard.Length;
+            }
 
             return p;
         }
@@ -93,7 +97,7 @@ namespace RamzXOtp.Otp
             sb.Append("?secret=").Append(Base32.Encode(p.Secret));
             if (!string.IsNullOrEmpty(p.Issuer)) sb.Append("&issuer=").Append(Uri.EscapeDataString(p.Issuer));
             sb.Append("&algorithm=").Append(AlgorithmName(p.Algorithm));
-            sb.Append("&digits=").Append(p.Digits.ToString(CultureInfo.InvariantCulture));
+            if (!p.IsSteam) sb.Append("&digits=").Append(p.Digits.ToString(CultureInfo.InvariantCulture));
             if (p.Type == OtpType.Hotp) sb.Append("&counter=").Append(p.Counter.ToString(CultureInfo.InvariantCulture));
             else sb.Append("&period=").Append(p.Period.ToString(CultureInfo.InvariantCulture));
             if (p.IsSteam) sb.Append("&encoder=steam");

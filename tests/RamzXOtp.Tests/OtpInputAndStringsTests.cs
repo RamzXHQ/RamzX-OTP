@@ -58,12 +58,19 @@ namespace RamzXOtp.Tests
         }
 
         [Fact]
-        public void Steam_AndTooManyDigits_AreNotStorableYet()
+        public void Steam_AndTenDigits_AreStoredOutsideKeePassFields()
         {
-            Assert.Equal(OtpInputState.NotStorable, OtpInput.Evaluate(
-                "otpauth://totp/Steam:me?secret=" + RfcSecret + "&encoder=steam", OtpAlgorithm.Sha1, 6, 30).State);
-            Assert.Equal(OtpInputState.NotStorable, OtpInput.Evaluate(
-                "otpauth://totp/x?secret=" + RfcSecret + "&digits=10", OtpAlgorithm.Sha1, 6, 30).State);
+            OtpInput steam = OtpInput.Evaluate("otpauth://totp/Steam:me?secret=" + RfcSecret + "&encoder=steam", OtpAlgorithm.Sha1, 6, 30);
+            Assert.Equal(OtpInputState.Ok, steam.State);
+            Assert.False(steam.Native);
+            Assert.Equal("me - Steam Guard", steam.Message);
+
+            OtpInput ten = OtpInput.Evaluate("otpauth://totp/x?secret=" + RfcSecret + "&digits=10", OtpAlgorithm.Sha1, 6, 30);
+            Assert.Equal(OtpInputState.Ok, ten.State);
+            Assert.False(ten.Native);
+            Assert.NotNull(ten.NotNativeReason);
+
+            Assert.True(OtpInput.Evaluate(RfcSecret, OtpAlgorithm.Sha1, 6, 30).Native);
         }
 
         [Fact]

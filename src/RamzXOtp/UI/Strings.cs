@@ -102,6 +102,33 @@ namespace RamzXOtp.UI
         internal const string MenuCopyTop = "MenuCopyTop";
         internal const string MenuCopyTopProtected = "MenuCopyTopProtected";
         internal const string StatusOverride = "StatusOverride";
+        internal const string StatusNotNativeOk = "StatusNotNativeOk";
+        internal const string QrWarning = "QrWarning";
+        internal const string Close = "Close";
+        internal const string ShowQrSubtitle = "ShowQrSubtitle";
+        internal const string ImportHowTo = "ImportHowTo";
+        internal const string ColService = "ColService";
+        internal const string ColAccount = "ColAccount";
+        internal const string ColType = "ColType";
+        internal const string ColStatus = "ColStatus";
+        internal const string ImportStart = "ImportStart";
+        internal const string ImportTitle = "ImportTitle";
+        internal const string ImportSubtitle = "ImportSubtitle";
+        internal const string ImportSameQr = "ImportSameQr";
+        internal const string ImportMoreQr = "ImportMoreQr";
+        internal const string ImportReady = "ImportReady";
+        internal const string ImportButton = "ImportButton";
+        internal const string ImportUnsupported = "ImportUnsupported";
+        internal const string ImportExists = "ImportExists";
+        internal const string ImportNew = "ImportNew";
+        internal const string MenuShowQr = "MenuShowQr";
+        internal const string MenuImport = "MenuImport";
+        internal const string MenuMigrate = "MenuMigrate";
+        internal const string OpenDatabaseFirst = "OpenDatabaseFirst";
+        internal const string ImportDone = "ImportDone";
+        internal const string MigrateNothing = "MigrateNothing";
+        internal const string MigrateAsk = "MigrateAsk";
+        internal const string MigrateDone = "MigrateDone";
         internal const string Copy = "Copy";
         internal const string Copied = "Copied";
         internal const string Save = "Save";
@@ -138,7 +165,7 @@ namespace RamzXOtp.UI
                 { ScanHint, "Click on the QR code  ·  Esc = cancel" },
                 { QrNotFound, "No QR code found.\r\n\r\nTip: zoom in so the QR code is larger, or copy it as an image (Win+Shift+S) and use \"From clipboard\"." },
                 { QrNotOtp, "This QR code is not an otpauth:// link for one-time passwords." },
-                { QrMigration, "This is a Google Authenticator export with several accounts. Importing it will come in a later version." },
+                { QrMigration, "This is a Google Authenticator export with several accounts. Use \"RamzX OTP → Import from Google Authenticator...\" for it." },
                 { NoImage, "The clipboard contains neither an image nor an otpauth:// link." },
                 { ImportCaption, "1. Get the QR code" },
                 { SettingsCaption, "Settings" },
@@ -155,6 +182,33 @@ namespace RamzXOtp.UI
                 { MenuCopyTop, "Copy OTP code   {0}" },
                 { MenuCopyTopProtected, "Copy OTP code (after Windows Hello)" },
                 { StatusOverride, "Changed by you: {0}. The QR code / link says: {1}. The service must use the same values, otherwise the codes will not match." },
+                { StatusNotNativeOk, "Recognized: {0}. Will be saved as an otpauth:// link in the field \"otp\": RamzX OTP and KeePassXC show it, KeePass's own Ctrl+T does not." },
+                { QrWarning, "Anyone who sees or photographs this QR code can create your codes. Only show it when you are alone." },
+                { Close, "Close" },
+                { ShowQrSubtitle, "Scan with your phone's authenticator app: {0}" },
+                { ImportHowTo, "In Google Authenticator on your phone: menu → \"Transfer accounts\" → \"Export accounts\". Then scan the QR code(s) shown on the phone, e.g. from a photo or a screenshot." },
+                { ColService, "Service" },
+                { ColAccount, "Account" },
+                { ColType, "Type" },
+                { ColStatus, "Status" },
+                { ImportStart, "Scan the first export QR code." },
+                { ImportTitle, "Import from Google Authenticator" },
+                { ImportSubtitle, "New entries are created in the group \"{0}\"" },
+                { ImportSameQr, "This QR code was already scanned." },
+                { ImportMoreQr, "QR code {0} of {1} read. Please scan the next one." },
+                { ImportReady, "{0} account(s) found. Choose which ones to import." },
+                { ImportButton, "Import ({0})" },
+                { ImportUnsupported, "not supported" },
+                { ImportExists, "already in KeePass" },
+                { ImportNew, "new" },
+                { MenuShowQr, "Show as QR code (for the phone)..." },
+                { MenuImport, "Import from Google Authenticator..." },
+                { MenuMigrate, "Convert old OTP formats (KeeOtp, KeeTrayTOTP, KeePassOTP, KeePassXC)..." },
+                { OpenDatabaseFirst, "Please open a database first." },
+                { ImportDone, "{0} entry/entries created in \"{1}\". Please save the database (Ctrl+S)." },
+                { MigrateNothing, "No entries with old OTP formats were found." },
+                { MigrateAsk, "{0} entry/entries use an old OTP format. Convert them to KeePass's own OTP fields?\r\n\r\nThe old fields stay in each entry's history." },
+                { MigrateDone, "{0} entry/entries converted. Please save the database (Ctrl+S)." },
                 { Copy, "Copy" },                { Copied, "Copied ✓" },
                 { Save, "Save" },
                 { Cancel, "Cancel" },
@@ -192,7 +246,7 @@ namespace RamzXOtp.UI
                 { ScanHint, "Auf den QR-Code klicken  ·  Esc = Abbrechen" },
                 { QrNotFound, "Kein QR-Code gefunden.\r\n\r\nTipp: Vergrößern Sie die Ansicht, damit der QR-Code größer ist, oder kopieren Sie ihn als Bild (Win+Umschalt+S) und nutzen Sie \"Aus Zwischenablage\"." },
                 { QrNotOtp, "Dieser QR-Code ist kein otpauth://-Link für Einmalpasswörter." },
-                { QrMigration, "Das ist ein Google-Authenticator-Export mit mehreren Konten. Der Import folgt in einer späteren Version." },
+                { QrMigration, "Das ist ein Google-Authenticator-Export mit mehreren Konten. Nutzen Sie dafür \"RamzX OTP → Aus Google Authenticator importieren...\"." },
                 { NoImage, "Die Zwischenablage enthält weder ein Bild noch einen otpauth://-Link." },
                 { ImportCaption, "1. QR-Code holen" },
                 { SettingsCaption, "Einstellungen" },
@@ -209,6 +263,33 @@ namespace RamzXOtp.UI
                 { MenuCopyTop, "OTP-Code kopieren   {0}" },
                 { MenuCopyTopProtected, "OTP-Code kopieren (nach Windows Hello)" },
                 { StatusOverride, "Von Ihnen geändert: {0}. Der QR-Code / Link sagt: {1}. Der Dienst muss dieselben Werte verwenden, sonst passen die Codes nicht." },
+                { StatusNotNativeOk, "Erkannt: {0}. Wird als otpauth://-Link im Feld \"otp\" gespeichert: RamzX OTP und KeePassXC zeigen ihn, KeePass' eigenes Strg+T nicht." },
+                { QrWarning, "Wer diesen QR-Code sieht oder fotografiert, kann Ihre Codes erzeugen. Zeigen Sie ihn nur, wenn Sie allein sind." },
+                { Close, "Schließen" },
+                { ShowQrSubtitle, "Mit der Authenticator-App des Handys scannen: {0}" },
+                { ImportHowTo, "In Google Authenticator auf dem Handy: Menü → \"Konten übertragen\" → \"Konten exportieren\". Dann den/die angezeigten QR-Code(s) scannen, z. B. von einem Foto oder Screenshot." },
+                { ColService, "Dienst" },
+                { ColAccount, "Konto" },
+                { ColType, "Typ" },
+                { ColStatus, "Status" },
+                { ImportStart, "Scannen Sie den ersten Export-QR-Code." },
+                { ImportTitle, "Aus Google Authenticator importieren" },
+                { ImportSubtitle, "Neue Einträge werden in der Gruppe \"{0}\" angelegt" },
+                { ImportSameQr, "Dieser QR-Code wurde bereits gescannt." },
+                { ImportMoreQr, "QR-Code {0} von {1} gelesen. Bitte den nächsten scannen." },
+                { ImportReady, "{0} Konto/Konten gefunden. Wählen Sie, welche importiert werden." },
+                { ImportButton, "Importieren ({0})" },
+                { ImportUnsupported, "nicht unterstützt" },
+                { ImportExists, "schon in KeePass" },
+                { ImportNew, "neu" },
+                { MenuShowQr, "Als QR-Code anzeigen (für das Handy)..." },
+                { MenuImport, "Aus Google Authenticator importieren..." },
+                { MenuMigrate, "Alte OTP-Formate umwandeln (KeeOtp, KeeTrayTOTP, KeePassOTP, KeePassXC)..." },
+                { OpenDatabaseFirst, "Bitte zuerst eine Datenbank öffnen." },
+                { ImportDone, "{0} Eintrag/Einträge in \"{1}\" angelegt. Bitte die Datenbank speichern (Strg+S)." },
+                { MigrateNothing, "Keine Einträge mit alten OTP-Formaten gefunden." },
+                { MigrateAsk, "{0} Eintrag/Einträge verwenden ein altes OTP-Format. In KeePass' eigene OTP-Felder umwandeln?\r\n\r\nDie alten Felder bleiben in der Historie jedes Eintrags." },
+                { MigrateDone, "{0} Eintrag/Einträge umgewandelt. Bitte die Datenbank speichern (Strg+S)." },
                 { Copy, "Kopieren" },                { Copied, "Kopiert ✓" },
                 { Save, "Speichern" },
                 { Cancel, "Abbrechen" },
@@ -246,7 +327,7 @@ namespace RamzXOtp.UI
                 { ScanHint, "اضغط على رمز QR  ·  Esc للإلغاء" },
                 { QrNotFound, "لم يُعثر على رمز QR.\r\n\r\nنصيحة: كبّر العرض ليصبح الرمز أكبر، أو انسخه كصورة (Win+Shift+S) واستخدم \"من الحافظة\"." },
                 { QrNotOtp, "رمز QR هذا ليس رابط otpauth:// لرموز المرة الواحدة." },
-                { QrMigration, "هذا تصدير من Google Authenticator فيه عدة حسابات. استيراده سيأتي في إصدار لاحق." },
+                { QrMigration, "هذا تصدير من Google Authenticator فيه عدة حسابات. استخدم لذلك \"RamzX OTP ← استيراد من Google Authenticator...\"." },
                 { NoImage, "الحافظة لا تحتوي على صورة ولا على رابط otpauth://." },
                 { ImportCaption, "1. احصل على رمز QR" },
                 { SettingsCaption, "الإعدادات" },
@@ -263,6 +344,33 @@ namespace RamzXOtp.UI
                 { MenuCopyTop, "نسخ رمز OTP   {0}" },
                 { MenuCopyTopProtected, "نسخ رمز OTP (بعد Windows Hello)" },
                 { StatusOverride, "غيّرته أنت: {0}. رمز QR / الرابط يقول: {1}. يجب أن تستخدم الخدمة نفس القيم، وإلا لن تتطابق الرموز." },
+                { StatusNotNativeOk, "تم التعرّف: {0}. سيُحفظ كرابط otpauth:// في الحقل \"otp\": يعرضه RamzX OTP وKeePassXC، أما Ctrl+T في KeePass فلا." },
+                { QrWarning, "كل من يرى رمز QR هذا أو يصوّره يستطيع توليد رموزك. اعرضه فقط وأنت وحدك." },
+                { Close, "إغلاق" },
+                { ShowQrSubtitle, "امسحه بتطبيق المصادقة في هاتفك: {0}" },
+                { ImportHowTo, "في Google Authenticator على الهاتف: القائمة ← \"نقل الحسابات\" ← \"تصدير الحسابات\". ثم امسح رمز (رموز) QR الظاهرة، مثلاً من صورة أو لقطة شاشة." },
+                { ColService, "الخدمة" },
+                { ColAccount, "الحساب" },
+                { ColType, "النوع" },
+                { ColStatus, "الحالة" },
+                { ImportStart, "امسح أول رمز QR للتصدير." },
+                { ImportTitle, "استيراد من Google Authenticator" },
+                { ImportSubtitle, "تُنشأ الإدخالات الجديدة في المجموعة \"{0}\"" },
+                { ImportSameQr, "تم مسح رمز QR هذا من قبل." },
+                { ImportMoreQr, "تمت قراءة رمز QR {0} من {1}. امسح التالي من فضلك." },
+                { ImportReady, "تم العثور على {0} حساب. اختر ما تريد استيراده." },
+                { ImportButton, "استيراد ({0})" },
+                { ImportUnsupported, "غير مدعوم" },
+                { ImportExists, "موجود في KeePass" },
+                { ImportNew, "جديد" },
+                { MenuShowQr, "عرض كرمز QR (للهاتف)..." },
+                { MenuImport, "استيراد من Google Authenticator..." },
+                { MenuMigrate, "تحويل صيغ OTP القديمة (KeeOtp وKeeTrayTOTP وKeePassOTP وKeePassXC)..." },
+                { OpenDatabaseFirst, "افتح قاعدة بيانات أولاً من فضلك." },
+                { ImportDone, "تم إنشاء {0} إدخال في \"{1}\". احفظ قاعدة البيانات من فضلك (Ctrl+S)." },
+                { MigrateNothing, "لم يُعثر على إدخالات بصيغ OTP قديمة." },
+                { MigrateAsk, "{0} إدخال يستخدم صيغة OTP قديمة. تحويلها إلى حقول OTP الخاصة بـ KeePass؟\r\n\r\nتبقى الحقول القديمة في سجل كل إدخال." },
+                { MigrateDone, "تم تحويل {0} إدخال. احفظ قاعدة البيانات من فضلك (Ctrl+S)." },
                 { Copy, "نسخ" },                { Copied, "تم النسخ ✓" },
                 { Save, "حفظ" },
                 { Cancel, "إلغاء" },
