@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>RamzXOtp</AssemblyName>
+    <RootNamespace>RamzXOtp</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Deterministic>true</Deterministic>
+
+    <!-- KeePass loads a DLL plugin only if the product name is exactly "KeePass Plugin". -->
+    <Product>KeePass Plugin</Product>
+    <AssemblyTitle>RamzX OTP</AssemblyTitle>
+    <Description>One-time passwords (TOTP/HOTP) and QR import for KeePass 2.</Description>
+    <Company>SeeColors iT</Company>
+    <Copyright>Copyright (c) 2026 SeeColors iT</Copyright>
+    <Version>0.0.1</Version>
+  </PropertyGroup>
+
+</Project>

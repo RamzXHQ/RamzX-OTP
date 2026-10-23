@@ -1,0 +1,13 @@
+﻿# Build output
+bin/
+obj/
+
+# Local test KeePass copies, databases and logs - never commit
+testenv/
+*.kdbx
+*.kdbx.*
+*.log
+
+# IDE
+.vs/
+*.user
