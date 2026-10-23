@@ -30,7 +30,20 @@ namespace RamzXOtp.UI
         /// <summary>True if the input was a link: the caller shows its settings in the controls.</summary>
         public bool FromUri { get; private set; }
 
-        public static OtpInput Evaluate(string text, OtpAlgorithm algorithm, int digits, int period)
+        /// <summary>True if the user changed a link's algorithm, digits or period.</summary>
+        public bool Overridden { get; private set; }
+
+        /// <summary>The settings exactly as written in the link (before any user change).</summary>
+        public OtpAlgorithm LinkAlgorithm { get; private set; }
+        public int LinkDigits { get; private set; }
+        public int LinkPeriod { get; private set; }
+
+        /// <param name="overrideLink">
+        /// Use algorithm/digits/period even if the input is a link (the user changed them on
+        /// purpose, e.g. when editing a saved entry). Otherwise the link's values win.
+        /// </param>
+        public static OtpInput Evaluate(string text, OtpAlgorithm algorithm, int digits, int period,
+            bool overrideLink = false)
         {
             OtpInput r = new OtpInput();
             string t = (text ?? string.Empty).Trim();
@@ -43,6 +56,16 @@ namespace RamzXOtp.UI
                 try { p = OtpAuthUri.Parse(t); }
                 catch (FormatException ex) { r.State = OtpInputState.Invalid; r.Message = ex.Message; return r; }
                 r.FromUri = true;
+                r.LinkAlgorithm = p.Algorithm;
+                r.LinkDigits = p.Digits;
+                r.LinkPeriod = p.Period;
+                if (overrideLink && (p.Algorithm != algorithm || p.Digits != digits || p.Period != period))
+                {
+                    p.Algorithm = algorithm;
+                    p.Digits = digits;
+                    p.Period = period;
+                    r.Overridden = true;
+                }
             }
             else
             {

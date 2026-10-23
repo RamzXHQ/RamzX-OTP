@@ -34,6 +34,7 @@ namespace RamzXOtp.UI
         private readonly Button m_save = new Button();
         private readonly Timer m_timer = new Timer();
         private bool m_updating;
+        private bool m_overrideLink; // user changed the settings of a link on purpose
         private OtpInput m_result;
 
         /// <summary>The parameters to save (valid after DialogResult.OK).</summary>
@@ -92,7 +93,7 @@ namespace RamzXOtp.UI
             inputRow.Margin = new Padding(0, 2, 0, Font.Height / 2);
             m_input.Width = w - Font.Height * 7;
             m_input.UseSystemPasswordChar = true;
-            m_input.TextChanged += delegate { Evaluate(); };
+            m_input.TextChanged += delegate { if (!m_updating) m_overrideLink = false; Evaluate(); };
             UIUtil.SetCueBanner(m_input, "otpauth://totp/...   /   JBSW Y3DP EHPK 3PXP");
             m_show.Text = Strings.Get(Strings.ShowSecret);
             m_show.AutoSize = true;
@@ -114,17 +115,17 @@ namespace RamzXOtp.UI
             m_algorithm.Items.AddRange(new object[] { "SHA-1", "SHA-256", "SHA-512" });
             m_algorithm.SelectedIndex = 0;
             m_algorithm.Width = Font.Height * 6;
-            m_algorithm.SelectedIndexChanged += delegate { Evaluate(); };
+            m_algorithm.SelectedIndexChanged += delegate { SettingChanged(); };
             m_digits.Minimum = Hotp.MinDigits;
             m_digits.Maximum = 8;
             m_digits.Value = 6;
             m_digits.Width = Font.Height * 3;
-            m_digits.ValueChanged += delegate { Evaluate(); };
+            m_digits.ValueChanged += delegate { SettingChanged(); };
             m_period.Minimum = 1;
             m_period.Maximum = Totp.MaxPeriod;
             m_period.Value = Totp.DefaultPeriod;
             m_period.Width = Font.Height * 4;
-            m_period.ValueChanged += delegate { Evaluate(); };
+            m_period.ValueChanged += delegate { SettingChanged(); };
             s.Controls.Add(Inline(Strings.Get(Strings.Algorithm))); s.Controls.Add(m_algorithm);
             s.Controls.Add(Inline(Strings.Get(Strings.Digits))); s.Controls.Add(m_digits);
             s.Controls.Add(Inline(Strings.Get(Strings.Period))); s.Controls.Add(m_period);
@@ -292,6 +293,13 @@ namespace RamzXOtp.UI
             m_input.SelectionStart = 0;
         }
 
+        private void SettingChanged()
+        {
+            if (m_updating) return;
+            if (m_result != null && m_result.FromUri) m_overrideLink = true;
+            Evaluate();
+        }
+
         private void Evaluate()
         {
             if (m_updating) return;
@@ -299,11 +307,11 @@ namespace RamzXOtp.UI
             if (m_result != null && m_result.Parameters != null) m_result.Parameters.Clear();
 
             m_result = OtpInput.Evaluate(m_input.Text, (OtpAlgorithm)m_algorithm.SelectedIndex,
-                (int)m_digits.Value, (int)m_period.Value);
+                (int)m_digits.Value, (int)m_period.Value, m_overrideLink);
 
-            if (m_result.FromUri && m_result.Parameters != null)
+            if (m_result.FromUri && m_result.Parameters != null && !m_overrideLink)
             {
-                // Show the link's settings; the link itself is the source of truth.
+                // A new link: show its settings. The user may still change them afterwards.
                 OtpParameters p = m_result.Parameters;
                 m_updating = true;
                 m_algorithm.SelectedIndex = (int)p.Algorithm;
@@ -311,9 +319,13 @@ namespace RamzXOtp.UI
                 m_period.Value = p.Period;
                 m_updating = false;
             }
-            m_settings.Enabled = !m_result.FromUri;
 
-            switch (m_result.State)
+            if (m_result.Overridden && m_result.State == OtpInputState.Ok)
+            {
+                m_status.Set(PillKind.Warn, Strings.Format(Strings.StatusOverride, m_result.Message,
+                    OtpAuthUri.AlgorithmName(m_result.LinkAlgorithm) + ", " + m_result.LinkDigits + ", " + m_result.LinkPeriod + " s"));
+            }
+            else switch (m_result.State)
             {
                 case OtpInputState.Empty:
                     m_status.Set(PillKind.Neutral, Strings.Get(Strings.StatusEmpty)); break;
