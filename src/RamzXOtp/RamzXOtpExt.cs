@@ -2,12 +2,15 @@
 // Copyright (c) 2026 SeeColors iT. MIT License.
 
 using System;
+using System.Globalization;
 using System.Windows.Forms;
 
 using KeePass;
 using KeePass.Plugins;
 using KeePass.UI;
+using KeePass.Util;
 using KeePassLib;
+using KeePassLib.Security;
 
 using RamzXOtp.Otp;
 using RamzXOtp.Storage;
@@ -33,27 +36,96 @@ namespace RamzXOtp
             m_host = null;
         }
 
+        /// <summary>
+        /// Entry context menu and Tools menu: "RamzX OTP" with "Copy code 123 456 (23 s)" - the
+        /// current code is shown in the menu itself - and "Add or replace...".
+        /// </summary>
         public override ToolStripMenuItem GetMenuItem(PluginMenuType t)
         {
             if (t != PluginMenuType.Entry && t != PluginMenuType.Main) return null;
 
-            ToolStripMenuItem item = new ToolStripMenuItem(Strings.Get(Strings.MenuAdd));
-            item.Click += OnAddClick;
-            return item;
+            ToolStripMenuItem root = new ToolStripMenuItem(Ui.Title);
+            root.Image = Icons.Menu(m_host.MainWindow);
+
+            ToolStripMenuItem copy = new ToolStripMenuItem(Strings.Get(Strings.MenuCopyNone));
+            copy.Click += OnCopyClick;
+            root.DropDownItems.Add(copy);
+
+            ToolStripMenuItem add = new ToolStripMenuItem(Strings.Get(Strings.MenuAdd));
+            add.Click += OnAddClick;
+            root.DropDownItems.Add(add);
+
+            root.DropDownOpening += delegate { UpdateCopyItem(copy); };
+            return root;
+        }
+
+        private PwEntry SelectedEntry()
+        {
+            PwDatabase db = m_host.Database;
+            PwEntry[] sel = m_host.MainWindow.GetSelectedEntries();
+            if (db == null || !db.IsOpen || sel == null || sel.Length != 1) return null;
+            return sel[0];
+        }
+
+        private void UpdateCopyItem(ToolStripMenuItem copy)
+        {
+            PwEntry e = SelectedEntry();
+            OtpParameters p = e == null ? null : KeePassOtpFields.Read(e);
+            if (p == null)
+            {
+                copy.Text = Strings.Get(Strings.MenuCopyNone);
+                copy.Enabled = false;
+                return;
+            }
+            try
+            {
+                long now = Totp.UnixNow();
+                string info = p.Type == OtpType.Totp
+                    ? Group(p.CurrentCode(now)) + "  (" + Strings.Format(Strings.Remaining, Totp.SecondsRemaining(now, p.Period)) + ")"
+                    : "HOTP";
+                copy.Text = Strings.Format(Strings.MenuCopy, info);
+                copy.Enabled = true;
+            }
+            finally { p.Clear(); }
+        }
+
+        private void OnCopyClick(object sender, EventArgs e)
+        {
+            PwEntry entry = SelectedEntry();
+            OtpParameters p = entry == null ? null : KeePassOtpFields.Read(entry);
+            if (p == null) return;
+            try
+            {
+                string code = p.CurrentCode(Totp.UnixNow());
+                if (p.Type == OtpType.Hotp)
+                {
+                    // Every HOTP code may be used once: advance the counter like KeePass does.
+                    entry.Strings.Set(KeePassOtpFields.HmacCounter,
+                        new ProtectedString(false, (p.Counter + 1).ToString(CultureInfo.InvariantCulture)));
+                    entry.Touch(true);
+                    m_host.MainWindow.UpdateUI(false, null, false, null, false, null, true);
+                }
+
+                if (ClipboardUtil.Copy(code, false, true, entry, m_host.Database, m_host.MainWindow.Handle))
+                {
+                    m_host.MainWindow.StartClipboardCountdown();
+                    m_host.MainWindow.SetStatusEx(Strings.Get(Strings.CodeCopied));
+                }
+            }
+            finally { p.Clear(); }
         }
 
         private void OnAddClick(object sender, EventArgs e)
         {
             Form owner = m_host.MainWindow;
             PwDatabase db = m_host.Database;
-            PwEntry[] sel = m_host.MainWindow.GetSelectedEntries();
-            if (db == null || !db.IsOpen || sel == null || sel.Length != 1)
+            PwEntry entry = SelectedEntry();
+            if (entry == null)
             {
                 Ui.Info(owner, Strings.Get(Strings.SelectOneEntry));
                 return;
             }
 
-            PwEntry entry = sel[0];
             if (KeePassOtpFields.HasOtp(entry) && !Ui.Ask(owner, Strings.Get(Strings.ConfirmReplace))) return;
 
             OtpParameters p;
@@ -75,6 +147,12 @@ namespace RamzXOtp
 
             m_host.MainWindow.UpdateUI(false, null, false, null, true, null, true);
             Ui.Info(owner, Strings.Get(Strings.Saved));
+        }
+
+        internal static string Group(string code)
+        {
+            int half = code.Length / 2;
+            return code.Substring(0, half) + " " + code.Substring(half);
         }
     }
 }

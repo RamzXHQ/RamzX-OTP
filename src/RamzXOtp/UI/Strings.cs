@@ -59,6 +59,9 @@ namespace RamzXOtp.UI
         }
 
         internal const string MenuAdd = "MenuAdd";
+        internal const string MenuCopy = "MenuCopy";
+        internal const string MenuCopyNone = "MenuCopyNone";
+        internal const string CodeCopied = "CodeCopied";
         internal const string FormTitle = "FormTitle";
         internal const string InputLabel = "InputLabel";
         internal const string ShowSecret = "ShowSecret";
@@ -93,7 +96,10 @@ namespace RamzXOtp.UI
         {
             return new Dictionary<string, string>
             {
-                { MenuAdd, "RamzX OTP: Add or replace one-time password..." },
+                { MenuAdd, "Add or replace one-time password..." },
+                { MenuCopy, "Copy code   {0}" },
+                { MenuCopyNone, "Copy code (no one-time password in this entry)" },
+                { CodeCopied, "One-time password copied to the clipboard." },
                 { FormTitle, "RamzX OTP - {0}" },
                 { InputLabel, "Paste the otpauth:// link or the secret key (Base32):" },
                 { ShowSecret, "Show" },
@@ -129,7 +135,10 @@ namespace RamzXOtp.UI
         {
             return new Dictionary<string, string>
             {
-                { MenuAdd, "RamzX OTP: Einmalpasswort hinzufügen oder ersetzen..." },
+                { MenuAdd, "Einmalpasswort hinzufügen oder ersetzen..." },
+                { MenuCopy, "Code kopieren   {0}" },
+                { MenuCopyNone, "Code kopieren (kein Einmalpasswort in diesem Eintrag)" },
+                { CodeCopied, "Einmalpasswort in die Zwischenablage kopiert." },
                 { FormTitle, "RamzX OTP - {0}" },
                 { InputLabel, "otpauth://-Link oder geheimen Schlüssel (Base32) einfügen:" },
                 { ShowSecret, "Anzeigen" },
@@ -165,7 +174,10 @@ namespace RamzXOtp.UI
         {
             return new Dictionary<string, string>
             {
-                { MenuAdd, "RamzX OTP: إضافة أو استبدال رمز لمرة واحدة..." },
+                { MenuAdd, "إضافة أو استبدال رمز لمرة واحدة..." },
+                { MenuCopy, "نسخ الرمز   {0}" },
+                { MenuCopyNone, "نسخ الرمز (لا يوجد رمز في هذا الإدخال)" },
+                { CodeCopied, "تم نسخ الرمز إلى الحافظة." },
                 { FormTitle, "RamzX OTP - {0}" },
                 { InputLabel, "الصق رابط otpauth:// أو المفتاح السري (Base32):" },
                 { ShowSecret, "إظهار" },
