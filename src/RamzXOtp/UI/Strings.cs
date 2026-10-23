@@ -76,6 +76,14 @@ namespace RamzXOtp.UI
         internal const string ConfirmReplace = "ConfirmReplace";
         internal const string Saved = "Saved";
         internal const string SelectOneEntry = "SelectOneEntry";
+        internal const string ScanScreen = "ScanScreen";
+        internal const string FromClipboard = "FromClipboard";
+        internal const string FromFile = "FromFile";
+        internal const string ScanHint = "ScanHint";
+        internal const string QrNotFound = "QrNotFound";
+        internal const string QrNotOtp = "QrNotOtp";
+        internal const string QrMigration = "QrMigration";
+        internal const string NoImage = "NoImage";
         internal const string Copy = "Copy";
         internal const string Copied = "Copied";
         internal const string Save = "Save";
@@ -103,8 +111,15 @@ namespace RamzXOtp.UI
                 { ConfirmReplace, "This entry already has a one-time password. Replace it?\r\n\r\nThe old values stay in the entry history." },
                 { Saved, "One-time password saved.\r\n\r\nKeePass shows the code with Ctrl+Shift+T and copies it with Ctrl+T. Auto-Type: {TIMEOTP}" },
                 { SelectOneEntry, "Please select exactly one entry." },
-                { Copy, "Copy" },
-                { Copied, "Copied ✓" },
+                { ScanScreen, "Scan QR from screen" },
+                { FromClipboard, "From clipboard" },
+                { FromFile, "Open image..." },
+                { ScanHint, "Click on the QR code  ·  Esc = cancel" },
+                { QrNotFound, "No QR code found.\r\n\r\nTip: zoom in so the QR code is larger, or copy it as an image (Win+Shift+S) and use \"From clipboard\"." },
+                { QrNotOtp, "This QR code is not an otpauth:// link for one-time passwords." },
+                { QrMigration, "This is a Google Authenticator export with several accounts. Importing it will come in a later version." },
+                { NoImage, "The clipboard contains neither an image nor an otpauth:// link." },
+                { Copy, "Copy" },                { Copied, "Copied ✓" },
                 { Save, "Save" },
                 { Cancel, "Cancel" },
             };
@@ -132,8 +147,15 @@ namespace RamzXOtp.UI
                 { ConfirmReplace, "Dieser Eintrag hat bereits ein Einmalpasswort. Ersetzen?\r\n\r\nDie alten Werte bleiben in der Eintragshistorie." },
                 { Saved, "Einmalpasswort gespeichert.\r\n\r\nKeePass zeigt den Code mit Strg+Umschalt+T und kopiert ihn mit Strg+T. Auto-Type: {TIMEOTP}" },
                 { SelectOneEntry, "Bitte genau einen Eintrag auswählen." },
-                { Copy, "Kopieren" },
-                { Copied, "Kopiert ✓" },
+                { ScanScreen, "QR vom Bildschirm scannen" },
+                { FromClipboard, "Aus Zwischenablage" },
+                { FromFile, "Bild öffnen..." },
+                { ScanHint, "Auf den QR-Code klicken  ·  Esc = Abbrechen" },
+                { QrNotFound, "Kein QR-Code gefunden.\r\n\r\nTipp: Vergrößern Sie die Ansicht, damit der QR-Code größer ist, oder kopieren Sie ihn als Bild (Win+Umschalt+S) und nutzen Sie \"Aus Zwischenablage\"." },
+                { QrNotOtp, "Dieser QR-Code ist kein otpauth://-Link für Einmalpasswörter." },
+                { QrMigration, "Das ist ein Google-Authenticator-Export mit mehreren Konten. Der Import folgt in einer späteren Version." },
+                { NoImage, "Die Zwischenablage enthält weder ein Bild noch einen otpauth://-Link." },
+                { Copy, "Kopieren" },                { Copied, "Kopiert ✓" },
                 { Save, "Speichern" },
                 { Cancel, "Abbrechen" },
             };
@@ -161,8 +183,15 @@ namespace RamzXOtp.UI
                 { ConfirmReplace, "هذا الإدخال فيه رمز لمرة واحدة. هل تريد استبداله؟\r\n\r\nتبقى القيم القديمة في سجل الإدخال." },
                 { Saved, "تم حفظ الرمز.\r\n\r\nيعرض KeePass الرمز بـ Ctrl+Shift+T وينسخه بـ Ctrl+T. الكتابة التلقائية: {TIMEOTP}" },
                 { SelectOneEntry, "اختر إدخالاً واحداً فقط من فضلك." },
-                { Copy, "نسخ" },
-                { Copied, "تم النسخ ✓" },
+                { ScanScreen, "مسح QR من الشاشة" },
+                { FromClipboard, "من الحافظة" },
+                { FromFile, "فتح صورة..." },
+                { ScanHint, "اضغط على رمز QR  ·  Esc للإلغاء" },
+                { QrNotFound, "لم يُعثر على رمز QR.\r\n\r\nنصيحة: كبّر العرض ليصبح الرمز أكبر، أو انسخه كصورة (Win+Shift+S) واستخدم \"من الحافظة\"." },
+                { QrNotOtp, "رمز QR هذا ليس رابط otpauth:// لرموز المرة الواحدة." },
+                { QrMigration, "هذا تصدير من Google Authenticator فيه عدة حسابات. استيراده سيأتي في إصدار لاحق." },
+                { NoImage, "الحافظة لا تحتوي على صورة ولا على رابط otpauth://." },
+                { Copy, "نسخ" },                { Copied, "تم النسخ ✓" },
                 { Save, "حفظ" },
                 { Cancel, "إلغاء" },
             };

@@ -66,6 +66,14 @@ namespace RamzXOtp.UI
             m_show.CheckedChanged += delegate { m_input.UseSystemPasswordChar = !m_show.Checked; };
             t.Controls.Add(m_show, 1, row); ++row;
 
+            FlowLayoutPanel import = new FlowLayoutPanel();
+            import.AutoSize = true;
+            import.Margin = new Padding(0, 4, 0, 6);
+            import.Controls.Add(ImportButton(Strings.ScanScreen, ScanScreen, true));
+            import.Controls.Add(ImportButton(Strings.FromClipboard, FromClipboard, false));
+            import.Controls.Add(ImportButton(Strings.FromFile, FromFile, false));
+            t.Controls.Add(import, 0, row); t.SetColumnSpan(import, 2); ++row;
+
             m_algorithm.DropDownStyle = ComboBoxStyle.DropDownList;
             m_algorithm.Items.AddRange(new object[] { "SHA-1", "SHA-256", "SHA-512" });
             m_algorithm.SelectedIndex = 0;
@@ -147,6 +155,69 @@ namespace RamzXOtp.UI
             l.AutoSize = true;
             l.Margin = new Padding(0, 6, 8, 0);
             return l;
+        }
+
+        private Button ImportButton(string key, Action action, bool primary)
+        {
+            Button b = new Button();
+            b.Text = Strings.Get(key);
+            b.AutoSize = true;
+            if (primary) b.Font = new Font(b.Font, FontStyle.Bold);
+            b.Click += delegate
+            {
+                try { action(); }
+                catch (Exception ex) { Ui.Warn(this, ex.Message); }
+            };
+            return b;
+        }
+
+        private void ScanScreen()
+        {
+            bool cancelled;
+            string text;
+            Hide();
+            try { text = ScreenScanner.PickAndDecode(this, out cancelled); }
+            finally { Show(); Activate(); }
+            if (!cancelled) UseDecoded(text);
+        }
+
+        private void FromClipboard()
+        {
+            bool hadImage;
+            string text = ScreenScanner.FromClipboard(out hadImage);
+            if (hadImage) { UseDecoded(text); return; }
+
+            string clip = Clipboard.ContainsText() ? Clipboard.GetText() : null;
+            if (clip != null && OtpAuthUri.LooksLikeUri(clip)) { SetInput(clip.Trim()); return; }
+            Ui.Info(this, Strings.Get(Strings.NoImage));
+        }
+
+        private void FromFile()
+        {
+            using (OpenFileDialog d = new OpenFileDialog())
+            {
+                d.Filter = "Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff|*.*|*.*";
+                if (d.ShowDialog(this) != DialogResult.OK) return;
+                UseDecoded(ScreenScanner.FromFile(d.FileName));
+            }
+        }
+
+        private void UseDecoded(string text)
+        {
+            if (text == null) { Ui.Info(this, Strings.Get(Strings.QrNotFound)); return; }
+            if (text.StartsWith("otpauth-migration://", StringComparison.OrdinalIgnoreCase))
+            {
+                Ui.Info(this, Strings.Get(Strings.QrMigration));
+                return;
+            }
+            if (!OtpAuthUri.LooksLikeUri(text)) { Ui.Info(this, Strings.Get(Strings.QrNotOtp)); return; }
+            SetInput(text);
+        }
+
+        private void SetInput(string text)
+        {
+            m_input.Text = text;
+            m_input.SelectionStart = 0;
         }
 
         private static void AddRow(TableLayoutPanel t, ref int row, string label, Control c)
