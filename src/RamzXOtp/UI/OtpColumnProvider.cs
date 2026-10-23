@@ -37,19 +37,27 @@ namespace RamzXOtp.UI
             return CellText(pe, m_guard());
         }
 
+        /// <summary>
+        /// Runs every second for every visible entry, also for entries from shared databases:
+        /// a damaged entry shows "?" instead of throwing (which KeePass would report as a crash).
+        /// </summary>
         internal static string CellText(PwEntry pe, CopyGuard guard)
         {
-            OtpParameters p = OtpStore.Read(pe);
-            if (p == null) return string.Empty;
+            OtpParameters p = null;
             try
             {
-                if (guard != null && !guard.MayShowWithoutAsking) return "••• •••  🔒";
+                // Protected: don't even decrypt the secret, only show that there is a code.
+                if (guard != null && !guard.MayShowWithoutAsking)
+                    return OtpStore.HasOtp(pe) ? "••• •••  🔒" : string.Empty;
+                p = OtpStore.Read(pe);
+                if (p == null) return string.Empty;
                 if (p.Type == OtpType.Hotp) return "HOTP";
                 long now = Totp.UnixNow();
                 string code = p.CurrentCode(now);
                 return RamzXOtpExt.Group(code) + "   " + Totp.SecondsRemaining(now, p.Period) + " s";
             }
-            finally { p.Clear(); }
+            catch (Exception) { return "?"; }
+            finally { if (p != null) p.Clear(); }
         }
 
         public override bool SupportsCellAction(string strColumnName) { return strColumnName == ColumnName; }

@@ -49,10 +49,16 @@ namespace RamzXOtp.Qr
                     if (!CrossCheck(img, (int)cx, y, true, hTotal, out cy, out vTotal)) continue;
                     if (!CrossCheck(img, (int)cx, (int)cy, false, hTotal, out cx2, out hTotal2)) continue;
                     Add(found, cx2, cy, (hTotal2 + vTotal) / 14f);
+                    // A crafted image tiled with finder-like squares would make the search
+                    // quadratic and freeze KeePass for minutes: give up on this image instead.
+                    if (found.Count > MaxFinders) return new List<FinderPattern>();
                 }
             }
             return found;
         }
+
+        /// <summary>Real screenshots have 3 per QR code; even a page of 60 codes stays below this.</summary>
+        internal const int MaxFinders = 200;
 
         private static bool IsFinderRatio(int a, int b, int c, int d, int e)
         {

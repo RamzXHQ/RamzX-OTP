@@ -213,7 +213,11 @@ namespace RamzXOtp.Qr
 
         private static string DecodeBytes(byte[] bytes, Encoding enc)
         {
-            if (enc != null) return enc.GetString(bytes);
+            if (enc != null)
+            {
+                try { return enc.GetString(bytes); }
+                catch (DecoderFallbackException) { throw new QrException("Invalid text for the declared character set."); }
+            }
             try { return new UTF8Encoding(false, true).GetString(bytes); }
             catch (DecoderFallbackException) { return Encoding.GetEncoding(28591).GetString(bytes); }
         }

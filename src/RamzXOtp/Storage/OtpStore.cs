@@ -43,35 +43,55 @@ namespace RamzXOtp.Storage
             return KeePassOtpFields.HasOtp(e) || e.Strings.Exists(OtpField) || e.Strings.Exists(TraySeed);
         }
 
-        /// <summary>Native fields first, then the legacy formats. Null if none can be read.</summary>
+        /// <summary>Longest OTP field value that is read; real ones are well below 1 KB.</summary>
+        public const int MaxFieldLength = 4096;
+
+        /// <summary>
+        /// Native fields first, then the legacy formats. Null if none can be read.
+        /// Never throws for damaged or crafted field values (entries may come from a shared
+        /// database, and this runs every second for the entry list column).
+        /// </summary>
         public static OtpParameters Read(PwEntry e, out OtpSource source)
         {
             if (e == null) throw new ArgumentNullException("e");
+            source = OtpSource.None;
 
-            OtpParameters p = KeePassOtpFields.Read(e);
+            OtpParameters p = Try(() => KeePassOtpFields.Read(e));
             if (p != null) { source = OtpSource.Native; return p; }
 
-            string otp = e.Strings.ReadSafe(OtpField).Trim();
+            string otp = Field(e, OtpField).Trim();
             if (OtpAuthUri.LooksLikeUri(otp))
             {
-                try { source = OtpSource.OtpUri; return OtpAuthUri.Parse(otp); }
-                catch (FormatException) { }
+                p = Try(() => OtpAuthUri.Parse(otp));
+                if (p != null) { source = OtpSource.OtpUri; return p; }
             }
             else if (otp.IndexOf("key=", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                p = ParseKeeOtp(otp);
+                p = Try(() => ParseKeeOtp(otp));
                 if (p != null) { source = OtpSource.KeeOtp; return p; }
             }
 
-            string seed = e.Strings.ReadSafe(TraySeed);
+            string seed = Field(e, TraySeed);
             if (seed.Length > 0)
             {
-                p = ParseTrayTotp(seed, e.Strings.ReadSafe(TraySettings));
+                string settings = Field(e, TraySettings);
+                p = Try(() => ParseTrayTotp(seed, settings));
                 if (p != null) { source = OtpSource.TrayTotp; return p; }
             }
-
-            source = OtpSource.None;
             return null;
+        }
+
+        /// <summary>Field value, or "" if it is missing or longer than MaxFieldLength.</summary>
+        internal static string Field(PwEntry e, string name)
+        {
+            string v = e.Strings.ReadSafe(name);
+            return v.Length > MaxFieldLength ? string.Empty : v;
+        }
+
+        private static OtpParameters Try(Func<OtpParameters> read)
+        {
+            try { return read(); }
+            catch (Exception) { return null; } // unreadable = no OTP; never a crash
         }
 
         public static OtpParameters Read(PwEntry e)
@@ -155,11 +175,12 @@ namespace RamzXOtp.Storage
             try
             {
                 if (encoding == "base64") p.Secret = Convert.FromBase64String(key);
-                else if (encoding == "hex") p.Secret = Hex(key);
+                else if (encoding == "hex") p.Secret = Hex(key); // throws FormatException/ArgumentException; caught in Read
                 else if (encoding == "utf8") p.Secret = Encoding.UTF8.GetBytes(key);
                 else p.Secret = Base32.Decode(key);
             }
             catch (FormatException) { return null; }
+            catch (ArgumentException) { return null; } // Convert.ToByte("-1", 16)
             if (p.Secret == null || p.Secret.Length == 0) return null;
 
             int n;

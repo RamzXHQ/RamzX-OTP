@@ -27,6 +27,7 @@ namespace RamzXOtp
     {
         private IPluginHost m_host;
         private CopyGuard m_guard;
+        private static readonly System.Diagnostics.Stopwatch s_clock = System.Diagnostics.Stopwatch.StartNew();
 
         public override bool Initialize(IPluginHost host)
         {
@@ -40,7 +41,7 @@ namespace RamzXOtp
                 UnlockBridge b = UnlockBridge.Find();
                 if (b == null) return null;
                 return msg => b.VerifyAsync(m_host.MainWindow, msg);
-            }, () => DateTime.UtcNow);
+            }, () => DateTime.MinValue + s_clock.Elapsed); // monotonic: changing the system clock cannot extend the grace time
 
             // Closing or locking the database ends the Windows Hello grace time.
             m_host.MainWindow.FileClosed += OnFileClosed;
@@ -112,17 +113,19 @@ namespace RamzXOtp
         /// <summary>null = no OTP; "" = protected (do not show); otherwise "123 456  (20 s)".</summary>
         private string CopyInfo(PwEntry e)
         {
-            OtpParameters p = e == null ? null : OtpStore.Read(e);
-            if (p == null) return null;
+            OtpParameters p = null;
             try
             {
+                p = e == null ? null : OtpStore.Read(e);
+                if (p == null) return null;
                 if (!m_guard.MayShowWithoutAsking) return string.Empty;
                 long now = Totp.UnixNow();
                 return p.Type == OtpType.Totp
                     ? Group(p.CurrentCode(now)) + "  (" + Strings.Format(Strings.Remaining, Totp.SecondsRemaining(now, p.Period)) + ")"
                     : "HOTP";
             }
-            finally { p.Clear(); }
+            catch (Exception) { return null; } // a damaged entry must not break the context menu
+            finally { if (p != null) p.Clear(); }
         }
 
         /// <summary>
@@ -250,6 +253,12 @@ namespace RamzXOtp
             if (p == null) return;
             try
             {
+                if (p.Type == OtpType.Hotp && p.Counter == ulong.MaxValue)
+                {
+                    // The counter would wrap around to 0 and old codes would be issued again.
+                    Ui.Warn(m_host.MainWindow, Strings.Get(Strings.HotpExhausted));
+                    return;
+                }
                 string code = p.CurrentCode(Totp.UnixNow());
                 if (p.Type == OtpType.Hotp)
                 {
@@ -269,16 +278,32 @@ namespace RamzXOtp
             finally { p.Clear(); }
         }
 
-        private void OnAddClick(object sender, EventArgs e)
+        private async void OnAddClick(object sender, EventArgs e)
+        {
+            try { await AddAsync(); }
+            catch (Exception ex) { Ui.Warn(m_host.MainWindow, ex.Message); } // async void: never let it reach KeePass
+        }
+
+        private async System.Threading.Tasks.Task AddAsync()
         {
             Form owner = m_host.MainWindow;
-            PwDatabase db = m_host.Database;
             PwEntry entry = SelectedEntry();
             if (entry == null)
             {
                 Ui.Info(owner, Strings.Get(Strings.SelectOneEntry));
                 return;
             }
+
+            // The dialog shows an existing secret and its live code: same protection as copying.
+            if (OtpStore.HasOtp(entry))
+            {
+                GuardResult g = await m_guard.CheckAsync(Strings.Format(Strings.HelloCopyReason,
+                    entry.Strings.ReadSafe(PwDefs.TitleField)));
+                if (g == GuardResult.Denied) { m_host.MainWindow.SetStatusEx(Strings.Get(Strings.HelloDenied)); return; }
+                if (g == GuardResult.UnlockMissing) { Ui.Warn(owner, Strings.Get(Strings.UnlockMissing)); return; }
+                if (!StillOpen(entry)) return;
+            }
+            PwDatabase db = m_host.Database;
 
             // An existing OTP is shown in the dialog (with its live code); saving keeps the old
             // values in the entry history, so no extra confirmation is needed.
@@ -339,6 +364,12 @@ namespace RamzXOtp
 
         private void OnImportClick(object sender, EventArgs e)
         {
+            try { Import(); }
+            catch (Exception ex) { Ui.Warn(m_host.MainWindow, ex.Message); } // never let it reach KeePass
+        }
+
+        private void Import()
+        {
             PwDatabase db = m_host.Database;
             if (db == null || !db.IsOpen) { Ui.Info(m_host.MainWindow, Strings.Get(Strings.OpenDatabaseFirst)); return; }
 
@@ -359,6 +390,12 @@ namespace RamzXOtp
         }
 
         private void OnMigrateClick(object sender, EventArgs e)
+        {
+            try { Migrate(); }
+            catch (Exception ex) { Ui.Warn(m_host.MainWindow, ex.Message); } // never let it reach KeePass
+        }
+
+        private void Migrate()
         {
             PwDatabase db = m_host.Database;
             if (db == null || !db.IsOpen) { Ui.Info(m_host.MainWindow, Strings.Get(Strings.OpenDatabaseFirst)); return; }

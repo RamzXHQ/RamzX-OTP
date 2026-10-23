@@ -150,7 +150,7 @@ namespace RamzXOtp.UI
 
         /// <summary>Larger files or images are refused (protection against decompression bombs).</summary>
         internal const long MaxFileBytes = 50L * 1024 * 1024;
-        internal const long MaxPixels = 60L * 1000 * 1000;
+        internal const long MaxPixels = 40L * 1000 * 1000; // an 8K screen has 33 megapixels
 
         internal static string FromFile(string path)
         {

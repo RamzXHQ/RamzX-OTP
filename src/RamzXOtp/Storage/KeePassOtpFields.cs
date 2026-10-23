@@ -86,7 +86,9 @@ namespace RamzXOtp.Storage
                 OtpParameters p = new OtpParameters();
                 p.Type = OtpType.Totp;
                 p.Secret = secret;
-                p.Digits = ReadInt(e, TimeLength, 6, 1, MaxNativeTotpDigits);
+                // Fewer than 6 digits is not allowed by RFC 4226 and is not computed (a damaged or
+                // crafted value from a shared database falls back to the default).
+                p.Digits = ReadInt(e, TimeLength, 6, Hotp.MinDigits, MaxNativeTotpDigits);
                 p.Period = ReadInt(e, TimePeriod, Totp.DefaultPeriod, 1, Totp.MaxPeriod);
                 p.Algorithm = ParseAlgorithmField(e.Strings.ReadSafe(TimeAlgorithm));
                 return p;
@@ -129,21 +131,23 @@ namespace RamzXOtp.Storage
         // Same precedence for all encodings: KeePass reads exactly one; prefer Base32, then others.
         private static byte[] ReadSecret(PwEntry e, string prefix)
         {
-            string v = e.Strings.ReadSafe(prefix + "Secret-Base32");
+            // Oversized values (e.g. from a crafted shared database) are ignored: they would be
+            // decoded and hashed every second for the entry list column.
+            string v = OtpStore.Field(e, prefix + "Secret-Base32");
             byte[] b;
             if (v.Length > 0 && Base32.TryDecode(v, out b) && b.Length > 0) return b;
 
-            v = e.Strings.ReadSafe(prefix + "Secret-Hex");
+            v = OtpStore.Field(e, prefix + "Secret-Hex");
             if (v.Length > 0 && TryHex(v, out b)) return b;
 
-            v = e.Strings.ReadSafe(prefix + "Secret-Base64");
+            v = OtpStore.Field(e, prefix + "Secret-Base64");
             if (v.Length > 0)
             {
                 try { b = Convert.FromBase64String(v.Trim()); if (b.Length > 0) return b; }
                 catch (FormatException) { }
             }
 
-            v = e.Strings.ReadSafe(prefix + "Secret");
+            v = OtpStore.Field(e, prefix + "Secret");
             if (v.Length > 0) return Encoding.UTF8.GetBytes(v);
             return null;
         }

@@ -90,6 +90,7 @@ namespace RamzXOtp.UI
         internal const string ImageTooLarge = "ImageTooLarge";
         internal const string TextTooLong = "TextTooLong";
         internal const string HelloDisableReason = "HelloDisableReason";
+        internal const string HotpExhausted = "HotpExhausted";
         internal const string ImportCaption = "ImportCaption";
         internal const string SettingsCaption = "SettingsCaption";
         internal const string BannerSubtitle = "BannerSubtitle";
@@ -173,6 +174,7 @@ namespace RamzXOtp.UI
                 { ImageTooLarge, "The image is too large. Please use a smaller image or a screenshot of the QR code." },
                 { TextTooLong, "The text is too long to be a QR code link." },
                 { HelloDisableReason, "Turn off Windows Hello before copying OTP codes" },
+                { HotpExhausted, "The HOTP counter of this entry is at its maximum. Please set up the one-time password again." },
                 { ImportCaption, "1. Get the QR code" },
                 { SettingsCaption, "Settings" },
                 { BannerSubtitle, "One-time password for: {0}" },
@@ -257,6 +259,7 @@ namespace RamzXOtp.UI
                 { ImageTooLarge, "Das Bild ist zu groß. Bitte ein kleineres Bild oder einen Screenshot des QR-Codes verwenden." },
                 { TextTooLong, "Der Text ist zu lang für einen QR-Code-Link." },
                 { HelloDisableReason, "Windows Hello vor dem Kopieren von OTP-Codes ausschalten" },
+                { HotpExhausted, "Der HOTP-Zähler dieses Eintrags ist am Maximum. Bitte das Einmalpasswort neu einrichten." },
                 { ImportCaption, "1. QR-Code holen" },
                 { SettingsCaption, "Einstellungen" },
                 { BannerSubtitle, "Einmalpasswort für: {0}" },
@@ -341,6 +344,7 @@ namespace RamzXOtp.UI
                 { ImageTooLarge, "الصورة كبيرة جداً. استخدم صورة أصغر أو لقطة شاشة لرمز QR." },
                 { TextTooLong, "النص أطول من أن يكون رابط رمز QR." },
                 { HelloDisableReason, "إيقاف طلب Windows Hello قبل نسخ رموز OTP" },
+                { HotpExhausted, "عدّاد HOTP لهذا الإدخال وصل إلى الحد الأقصى. أعد إعداد كلمة المرور لمرة واحدة من جديد." },
                 { ImportCaption, "1. احصل على رمز QR" },
                 { SettingsCaption, "الإعدادات" },
                 { BannerSubtitle, "رمز لمرة واحدة لـ: {0}" },
