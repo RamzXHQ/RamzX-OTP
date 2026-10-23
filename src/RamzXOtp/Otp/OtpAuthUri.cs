@@ -17,6 +17,9 @@ namespace RamzXOtp.Otp
     {
         private const string Scheme = "otpauth://";
 
+        /// <summary>Real links are a few hundred characters; longer input is rejected early.</summary>
+        public const int MaxLength = 4096;
+
         public static bool LooksLikeUri(string text)
         {
             return text != null && text.Trim().StartsWith(Scheme, StringComparison.OrdinalIgnoreCase);
@@ -26,6 +29,7 @@ namespace RamzXOtp.Otp
         public static OtpParameters Parse(string uri)
         {
             if (!LooksLikeUri(uri)) throw new FormatException("Not an otpauth:// link.");
+            if (uri.Length > MaxLength) throw new FormatException("The link is too long.");
             string s = uri.Trim().Substring(Scheme.Length);
 
             int slash = s.IndexOf('/');

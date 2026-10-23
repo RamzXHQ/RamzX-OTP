@@ -87,6 +87,9 @@ namespace RamzXOtp.UI
         internal const string QrNotOtp = "QrNotOtp";
         internal const string QrMigration = "QrMigration";
         internal const string NoImage = "NoImage";
+        internal const string ImageTooLarge = "ImageTooLarge";
+        internal const string TextTooLong = "TextTooLong";
+        internal const string HelloDisableReason = "HelloDisableReason";
         internal const string ImportCaption = "ImportCaption";
         internal const string SettingsCaption = "SettingsCaption";
         internal const string BannerSubtitle = "BannerSubtitle";
@@ -167,6 +170,9 @@ namespace RamzXOtp.UI
                 { QrNotOtp, "This QR code is not an otpauth:// link for one-time passwords." },
                 { QrMigration, "This is a Google Authenticator export with several accounts. Use \"RamzX OTP → Import from Google Authenticator...\" for it." },
                 { NoImage, "The clipboard contains neither an image nor an otpauth:// link." },
+                { ImageTooLarge, "The image is too large. Please use a smaller image or a screenshot of the QR code." },
+                { TextTooLong, "The text is too long to be a QR code link." },
+                { HelloDisableReason, "Turn off Windows Hello before copying OTP codes" },
                 { ImportCaption, "1. Get the QR code" },
                 { SettingsCaption, "Settings" },
                 { BannerSubtitle, "One-time password for: {0}" },
@@ -248,6 +254,9 @@ namespace RamzXOtp.UI
                 { QrNotOtp, "Dieser QR-Code ist kein otpauth://-Link für Einmalpasswörter." },
                 { QrMigration, "Das ist ein Google-Authenticator-Export mit mehreren Konten. Nutzen Sie dafür \"RamzX OTP → Aus Google Authenticator importieren...\"." },
                 { NoImage, "Die Zwischenablage enthält weder ein Bild noch einen otpauth://-Link." },
+                { ImageTooLarge, "Das Bild ist zu groß. Bitte ein kleineres Bild oder einen Screenshot des QR-Codes verwenden." },
+                { TextTooLong, "Der Text ist zu lang für einen QR-Code-Link." },
+                { HelloDisableReason, "Windows Hello vor dem Kopieren von OTP-Codes ausschalten" },
                 { ImportCaption, "1. QR-Code holen" },
                 { SettingsCaption, "Einstellungen" },
                 { BannerSubtitle, "Einmalpasswort für: {0}" },
@@ -329,6 +338,9 @@ namespace RamzXOtp.UI
                 { QrNotOtp, "رمز QR هذا ليس رابط otpauth:// لرموز المرة الواحدة." },
                 { QrMigration, "هذا تصدير من Google Authenticator فيه عدة حسابات. استخدم لذلك \"RamzX OTP ← استيراد من Google Authenticator...\"." },
                 { NoImage, "الحافظة لا تحتوي على صورة ولا على رابط otpauth://." },
+                { ImageTooLarge, "الصورة كبيرة جداً. استخدم صورة أصغر أو لقطة شاشة لرمز QR." },
+                { TextTooLong, "النص أطول من أن يكون رابط رمز QR." },
+                { HelloDisableReason, "إيقاف طلب Windows Hello قبل نسخ رموز OTP" },
                 { ImportCaption, "1. احصل على رمز QR" },
                 { SettingsCaption, "الإعدادات" },
                 { BannerSubtitle, "رمز لمرة واحدة لـ: {0}" },

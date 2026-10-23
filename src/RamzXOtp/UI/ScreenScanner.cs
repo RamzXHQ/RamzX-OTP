@@ -3,6 +3,7 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -142,15 +143,28 @@ namespace RamzXOtp.UI
             {
                 hadImage = true;
                 using (Image img = Clipboard.GetImage())
-                using (Bitmap bmp = new Bitmap(img))
-                    return QrDecoder.Decode(bmp);
+                    return Decode(img);
             }
             return null;
         }
 
+        /// <summary>Larger files or images are refused (protection against decompression bombs).</summary>
+        internal const long MaxFileBytes = 50L * 1024 * 1024;
+        internal const long MaxPixels = 60L * 1000 * 1000;
+
         internal static string FromFile(string path)
         {
-            using (Bitmap bmp = new Bitmap(path))
+            if (new FileInfo(path).Length > MaxFileBytes) throw new InvalidDataException(Strings.Get(Strings.ImageTooLarge));
+            using (FileStream fs = File.OpenRead(path))
+            using (Image img = Image.FromStream(fs, false, false)) // reads the header only; pixels are decoded later
+                return Decode(img);
+        }
+
+        internal static string Decode(Image img)
+        {
+            if (img == null) return null;
+            if ((long)img.Width * img.Height > MaxPixels) throw new InvalidDataException(Strings.Get(Strings.ImageTooLarge));
+            using (Bitmap bmp = new Bitmap(img))
                 return QrDecoder.Decode(bmp);
         }
 

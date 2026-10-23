@@ -42,14 +42,26 @@ namespace RamzXOtp
                 return msg => b.VerifyAsync(m_host.MainWindow, msg);
             }, () => DateTime.UtcNow);
 
+            // Closing or locking the database ends the Windows Hello grace time.
+            m_host.MainWindow.FileClosed += OnFileClosed;
+
             AddTopLevelCopy();
             RegisterColumn();
             return true;
         }
 
+        private void OnFileClosed(object sender, FileClosedEventArgs e)
+        {
+            if (m_guard != null) m_guard.Reset();
+        }
+
         public override void Terminate()
         {
-            if (m_host != null) UnregisterColumn();
+            if (m_host != null)
+            {
+                m_host.MainWindow.FileClosed -= OnFileClosed;
+                UnregisterColumn();
+            }
             ContextMenuStrip cms = m_host == null ? null : m_host.MainWindow.EntryContextMenu;
             if (cms != null && m_topCopy != null)
             {
@@ -172,13 +184,28 @@ namespace RamzXOtp
 
         private async void OnProtectClick(object sender, EventArgs e)
         {
-            if (m_guard.RequireHello)
+            try
             {
-                m_guard.RequireHello = false;
-                return;
+                if (m_guard.RequireHello)
+                {
+                    if (!await m_guard.DisableAsync(Strings.Get(Strings.HelloDisableReason)))
+                        m_host.MainWindow.SetStatusEx(Strings.Get(Strings.HelloDenied));
+                    return;
+                }
+                if (!await m_guard.EnableAsync(Strings.Get(Strings.HelloEnableReason)))
+                    Ui.Info(m_host.MainWindow, Strings.Get(Strings.HelloNotEnabled));
             }
-            if (!await m_guard.EnableAsync(Strings.Get(Strings.HelloEnableReason)))
-                Ui.Info(m_host.MainWindow, Strings.Get(Strings.HelloNotEnabled));
+            catch (Exception ex) { Ui.Warn(m_host.MainWindow, ex.Message); } // async void: never let it reach KeePass
+        }
+
+        /// <summary>
+        /// After waiting for Windows Hello the database may have been closed, locked or switched:
+        /// only go on if the entry still belongs to the open database.
+        /// </summary>
+        private bool StillOpen(PwEntry entry)
+        {
+            PwDatabase db = m_host == null ? null : m_host.Database;
+            return db != null && db.IsOpen && db.RootGroup != null && db.RootGroup.FindEntry(entry.Uuid, true) == entry;
         }
 
         private PwEntry SelectedEntry()
@@ -205,12 +232,19 @@ namespace RamzXOtp
 
         private async void CopyEntry(PwEntry entry)
         {
+            try { await CopyEntryAsync(entry); }
+            catch (Exception ex) { Ui.Warn(m_host.MainWindow, ex.Message); } // async void: never let it reach KeePass
+        }
+
+        private async System.Threading.Tasks.Task CopyEntryAsync(PwEntry entry)
+        {
             if (entry == null || !OtpStore.HasOtp(entry)) return;
 
             GuardResult g = await m_guard.CheckAsync(Strings.Format(Strings.HelloCopyReason,
                 entry.Strings.ReadSafe(PwDefs.TitleField)));
             if (g == GuardResult.Denied) { m_host.MainWindow.SetStatusEx(Strings.Get(Strings.HelloDenied)); return; }
             if (g == GuardResult.UnlockMissing) { Ui.Warn(m_host.MainWindow, Strings.Get(Strings.UnlockMissing)); return; }
+            if (!StillOpen(entry)) return;
 
             OtpParameters p = OtpStore.Read(entry);
             if (p == null) return;
@@ -276,6 +310,12 @@ namespace RamzXOtp
 
         private async void OnShowQrClick(object sender, EventArgs e)
         {
+            try { await ShowQrAsync(); }
+            catch (Exception ex) { Ui.Warn(m_host.MainWindow, ex.Message); } // async void: never let it reach KeePass
+        }
+
+        private async System.Threading.Tasks.Task ShowQrAsync()
+        {
             PwEntry entry = SelectedEntry();
             if (entry == null || !OtpStore.HasOtp(entry)) { Ui.Info(m_host.MainWindow, Strings.Get(Strings.SelectOneEntry)); return; }
 
@@ -283,6 +323,7 @@ namespace RamzXOtp
             GuardResult g = await m_guard.CheckAsync(Strings.Format(Strings.HelloCopyReason, title));
             if (g == GuardResult.Denied) { m_host.MainWindow.SetStatusEx(Strings.Get(Strings.HelloDenied)); return; }
             if (g == GuardResult.UnlockMissing) { Ui.Warn(m_host.MainWindow, Strings.Get(Strings.UnlockMissing)); return; }
+            if (!StillOpen(entry)) return;
 
             OtpParameters p = OtpStore.Read(entry);
             if (p == null) return;

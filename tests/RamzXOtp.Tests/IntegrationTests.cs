@@ -162,6 +162,36 @@ namespace RamzXOtp.Tests
         }
 
         [Fact]
+        public async Task Disable_NeedsHello_UnlessUnlockIsMissing()
+        {
+            CopyGuard g = NewGuard(new AceCustomConfig());
+            g.RequireHello = true;
+
+            m_answer = false;
+            Assert.False(await g.DisableAsync("x"));  // one click is not enough
+            Assert.True(g.RequireHello);
+
+            m_answer = true;
+            Assert.True(await g.DisableAsync("x"));
+            Assert.False(g.RequireHello);
+
+            g.RequireHello = true;
+            m_unlockLoaded = false;                    // otherwise it could never be switched off again
+            Assert.True(await g.DisableAsync("x"));
+            Assert.False(g.RequireHello);
+        }
+
+        [Fact]
+        public async Task Reset_EndsGraceTime()
+        {
+            CopyGuard g = NewGuard(new AceCustomConfig());
+            Assert.True(await g.EnableAsync("x"));
+            Assert.True(g.MayShowWithoutAsking);
+            g.Reset();                                 // e.g. database locked
+            Assert.False(g.MayShowWithoutAsking);
+        }
+
+        [Fact]
         public void NullConfig_Throws()
         {
             Assert.Throws<ArgumentNullException>(() => new CopyGuard(null, () => null, () => DateTime.UtcNow));

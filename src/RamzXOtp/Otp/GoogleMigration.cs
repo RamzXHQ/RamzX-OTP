@@ -35,6 +35,12 @@ namespace RamzXOtp.Otp
     {
         private const string Prefix = "otpauth-migration://";
 
+        /// <summary>A QR code holds at most ~3 KB; anything much longer is not a real export.</summary>
+        public const int MaxLength = 16 * 1024;
+
+        /// <summary>Google splits large exports into a handful of QR codes.</summary>
+        public const int MaxBatchSize = 100;
+
         public static bool LooksLikeMigration(string text)
         {
             return text != null && text.Trim().StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
@@ -43,6 +49,7 @@ namespace RamzXOtp.Otp
         public static MigrationBatch Parse(string uri)
         {
             if (!LooksLikeMigration(uri)) throw new FormatException("Not a Google Authenticator export.");
+            if (uri.Length > MaxLength) throw new FormatException("The export data is too long.");
 
             string s = uri.Trim();
             int q = s.IndexOf('?');
@@ -77,19 +84,16 @@ namespace RamzXOtp.Otp
                 r.ReadKey(out field, out wire);
                 switch (field)
                 {
-                    case 1 when wire == 2:
-                    {
-                        int len = (int)r.ReadVarint();
-                        batch.Accounts.Add(ParseAccount(r.Sub(len)));
-                        break;
-                    }
-                    case 3 when wire == 0: batch.BatchSize = (int)r.ReadVarint(); break;
-                    case 4 when wire == 0: batch.BatchIndex = (int)r.ReadVarint(); break;
-                    case 5 when wire == 0: batch.BatchId = (int)r.ReadVarint(); break;
+                    case 1 when wire == 2: batch.Accounts.Add(ParseAccount(r.Sub(r.ReadLength()))); break;
+                    case 3 when wire == 0: batch.BatchSize = r.ReadInt(); break;
+                    case 4 when wire == 0: batch.BatchIndex = r.ReadInt(); break;
+                    case 5 when wire == 0: batch.BatchId = r.ReadInt(); break;
                     default: r.Skip(wire); break;
                 }
             }
             if (batch.BatchSize < 1) batch.BatchSize = 1;
+            if (batch.BatchSize > MaxBatchSize || batch.BatchIndex >= batch.BatchSize)
+                throw new FormatException("The export data is damaged.");
             return batch;
         }
 
@@ -105,7 +109,7 @@ namespace RamzXOtp.Otp
                 r.ReadKey(out field, out wire);
                 if (wire == 2 && (field == 1 || field == 2 || field == 3))
                 {
-                    byte[] b = r.ReadBytes((int)r.ReadVarint());
+                    byte[] b = r.ReadBytes(r.ReadLength());
                     if (field == 1) p.Secret = b;
                     else if (field == 2) name = Encoding.UTF8.GetString(b);
                     else p.Issuer = Encoding.UTF8.GetString(b);
@@ -193,13 +197,30 @@ namespace RamzXOtp.Otp
             internal void ReadKey(out int field, out int wire)
             {
                 ulong key = ReadVarint();
+                if (key > int.MaxValue) throw new FormatException("Invalid field number.");
                 field = (int)(key >> 3);
                 wire = (int)(key & 7);
             }
 
+            /// <summary>A length prefix; must fit into the remaining data (no overflow, no huge allocation).</summary>
+            internal int ReadLength()
+            {
+                ulong n = ReadVarint();
+                if (n > (ulong)(m_end - m_pos)) throw new EndOfStreamException();
+                return (int)n;
+            }
+
+            /// <summary>A non-negative number that fits into an int (counts, indices, ids).</summary>
+            internal int ReadInt()
+            {
+                ulong v = ReadVarint();
+                if (v > int.MaxValue) throw new FormatException("Number out of range.");
+                return (int)v;
+            }
+
             internal byte[] ReadBytes(int n)
             {
-                if (n < 0 || m_pos + n > m_end) throw new EndOfStreamException();
+                if (n < 0 || n > m_end - m_pos) throw new EndOfStreamException();
                 byte[] b = new byte[n];
                 Array.Copy(m_buf, m_pos, b, 0, n);
                 m_pos += n;
@@ -208,7 +229,7 @@ namespace RamzXOtp.Otp
 
             internal ProtoReader Sub(int n)
             {
-                if (n < 0 || m_pos + n > m_end) throw new EndOfStreamException();
+                if (n < 0 || n > m_end - m_pos) throw new EndOfStreamException();
                 ProtoReader r = new ProtoReader(m_buf, m_pos, n);
                 m_pos += n;
                 return r;
@@ -220,7 +241,7 @@ namespace RamzXOtp.Otp
                 {
                     case 0: ReadVarint(); break;
                     case 1: Advance(8); break;
-                    case 2: Advance((int)ReadVarint()); break;
+                    case 2: Advance(ReadLength()); break;
                     case 5: Advance(4); break;
                     default: throw new FormatException("Unsupported protobuf wire type " + wire + ".");
                 }
@@ -228,7 +249,7 @@ namespace RamzXOtp.Otp
 
             private void Advance(int n)
             {
-                if (n < 0 || m_pos + n > m_end) throw new EndOfStreamException();
+                if (n < 0 || n > m_end - m_pos) throw new EndOfStreamException();
                 m_pos += n;
             }
         }

@@ -62,6 +62,23 @@ namespace RamzXOtp.Integration
             return GuardResult.Allowed;
         }
 
+        /// <summary>
+        /// Turns the protection off. Needs Windows Hello as well (otherwise anyone at the open
+        /// KeePass could switch it off with one click), unless Miftawerk Unlock is not loaded:
+        /// then nobody could ever switch it off again.
+        /// </summary>
+        internal async Task<bool> DisableAsync(string reason)
+        {
+            if (!RequireHello) return true;
+            GuardResult g = await CheckAsync(reason);
+            if (g == GuardResult.Denied) return false;
+            RequireHello = false;
+            return true;
+        }
+
+        /// <summary>Ends the grace time, e.g. when the database is closed or locked.</summary>
+        internal void Reset() { m_verifiedUntil = DateTime.MinValue; }
+
         /// <summary>Turns the protection on only after one successful Windows Hello check.</summary>
         internal async Task<bool> EnableAsync(string reason)
         {

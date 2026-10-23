@@ -49,6 +49,12 @@ namespace RamzXOtp.UI
             string t = (text ?? string.Empty).Trim();
 
             if (t.Length == 0) { r.State = OtpInputState.Empty; return r; }
+            if (t.Length > OtpAuthUri.MaxLength)
+            {
+                r.State = OtpInputState.Invalid;
+                r.Message = Strings.Get(Strings.TextTooLong);
+                return r;
+            }
 
             OtpParameters p;
             if (OtpAuthUri.LooksLikeUri(t))

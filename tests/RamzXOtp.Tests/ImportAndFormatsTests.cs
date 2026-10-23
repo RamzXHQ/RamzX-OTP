@@ -179,6 +179,29 @@ namespace RamzXOtp.Tests
             Assert.Throws<FormatException>(() => GoogleMigration.Parse(uri));
         }
 
+        // Security: crafted length prefixes must not overflow or allocate huge arrays.
+        [Theory]
+        [InlineData(new byte[] { 0x0A, 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x00 })]              // account length int.MaxValue
+        [InlineData(new byte[] { 0x0A, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F })]                    // length > int.MaxValue
+        [InlineData(new byte[] { 0x0A, 0x05, 0x0A, 0xFF, 0xFF, 0xFF, 0x7F })]              // secret length huge
+        [InlineData(new byte[] { 0x5A, 0xFE, 0xFF, 0xFF, 0xFF, 0x07 })]                    // unknown field, huge skip
+        [InlineData(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 })] // huge field number
+        [InlineData(new byte[] { 0x18, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F })]                    // batch size > int.MaxValue
+        [InlineData(new byte[] { 0x18, 0xE8, 0x07 })]                                      // batch size 1000
+        [InlineData(new byte[] { 0x18, 0x02, 0x20, 0x05 })]                                // batch index 5 of 2
+        public void CraftedPayload_IsRejectedCleanly(byte[] payload)
+        {
+            string uri = "otpauth-migration://offline?data=" + System.Uri.EscapeDataString(Convert.ToBase64String(payload));
+            Assert.Throws<FormatException>(() => GoogleMigration.Parse(uri));
+        }
+
+        [Fact]
+        public void TooLongInput_IsRejected()
+        {
+            Assert.Throws<FormatException>(() => GoogleMigration.Parse("otpauth-migration://offline?data=" + new string('A', GoogleMigration.MaxLength)));
+            Assert.Throws<FormatException>(() => OtpAuthUri.Parse("otpauth://totp/x?secret=" + new string('A', OtpAuthUri.MaxLength)));
+        }
+
         [Fact]
         public void ExportQr_ScannedFromImage()
         {
@@ -369,6 +392,66 @@ namespace RamzXOtp.Tests
             Assert.True(AccountImporter.Exists(db, a.Secret));
             Assert.False(AccountImporter.Exists(db, new byte[] { 1, 2, 3 }));
             Assert.Throws<ArgumentNullException>(() => AccountImporter.CreateEntries(null, g, new OtpParameters[0]));
+        }
+    }
+
+    public class ImportSafetyTests
+    {
+        // Security: names from a QR code must not plant KeePass placeholders ({CMD:...} etc.).
+        [Theory]
+        [InlineData("{CMD:/calc.exe/}", "(CMD:/calc.exe/)")]
+        [InlineData("a\r\nb\tc\0d", "a  b c d")]
+        [InlineData("   ", null)]
+        [InlineData(null, null)]
+        [InlineData("GitHub", "GitHub")]
+        public void SafeName(string input, string expected)
+        {
+            Assert.Equal(expected, AccountImporter.SafeName(input));
+        }
+
+        [Fact]
+        public void SafeName_LimitsLength_WithoutSplittingSurrogates()
+        {
+            Assert.Equal(AccountImporter.MaxNameLength, AccountImporter.SafeName(new string('x', 10000)).Length);
+            string emoji = new string('x', AccountImporter.MaxNameLength - 1) + "😀";
+            string r = AccountImporter.SafeName(emoji);
+            Assert.False(char.IsHighSurrogate(r[r.Length - 1]));
+        }
+
+        [Fact]
+        public void ImportedEntries_ContainNoPlaceholders()
+        {
+            PwDatabase db = new PwDatabase();
+            db.RootGroup = new PwGroup(true, true);
+            OtpParameters p = OtpAuthUri.Parse("otpauth://totp/x?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ");
+            p.Issuer = "{CMD:/calc.exe/}";
+            p.Account = "{USERNAME}{T-CONV:/x/}";
+            PwEntry e = AccountImporter.CreateEntries(db, db.RootGroup, new[] { p })[0];
+            Assert.DoesNotContain("{", e.Strings.ReadSafe(PwDefs.TitleField));
+            Assert.DoesNotContain("{", e.Strings.ReadSafe(PwDefs.UserNameField));
+            Assert.DoesNotContain("}", e.Strings.ReadSafe(PwDefs.UserNameField));
+        }
+
+        [Fact]
+        public void SameSecret()
+        {
+            Assert.True(AccountImporter.SameSecret(new byte[] { 1, 2 }, new byte[] { 1, 2 }));
+            Assert.False(AccountImporter.SameSecret(new byte[] { 1, 2 }, new byte[] { 1, 3 }));
+            Assert.False(AccountImporter.SameSecret(new byte[] { 1 }, new byte[] { 1, 2 }));
+            Assert.False(AccountImporter.SameSecret(null, new byte[] { 1 }));
+        }
+
+        [Fact]
+        public void TooLargeImage_IsRefused()
+        {
+            using (Bitmap big = new Bitmap(8000, 8000, System.Drawing.Imaging.PixelFormat.Format1bppIndexed))
+                Assert.Throws<InvalidDataException>(() => ScreenScanner.Decode(big));
+        }
+
+        [Fact]
+        public void TooLongText_IsInvalid()
+        {
+            Assert.Equal(OtpInputState.Invalid, OtpInput.Evaluate(new string('A', OtpAuthUri.MaxLength + 1), OtpAlgorithm.Sha1, 6, 30).State);
         }
     }
 

@@ -173,6 +173,7 @@ namespace RamzXOtp.UI
         internal void Add(string text)
         {
             if (string.IsNullOrEmpty(text)) { m_status.Set(PillKind.Error, Strings.Get(Strings.QrNotFound)); return; }
+            if (text.Length > GoogleMigration.MaxLength) { m_status.Set(PillKind.Error, Strings.Get(Strings.TextTooLong)); return; }
 
             if (OtpAuthUri.LooksLikeUri(text))
             {
@@ -199,8 +200,7 @@ namespace RamzXOtp.UI
         {
             bool exists = unsupported == null && AccountImporter.Exists(m_db, p.Secret);
             foreach (OtpParameters known in m_accounts)
-                if (known.Secret != null && p.Secret != null && Convert.ToBase64String(known.Secret) == Convert.ToBase64String(p.Secret))
-                    exists = true;
+                if (AccountImporter.SameSecret(known.Secret, p.Secret)) exists = true;
 
             ListViewItem item = new ListViewItem(string.IsNullOrEmpty(p.Issuer) ? "-" : p.Issuer);
             item.SubItems.Add(p.Account ?? string.Empty);
