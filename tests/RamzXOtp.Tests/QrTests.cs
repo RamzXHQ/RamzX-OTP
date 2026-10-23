@@ -138,8 +138,12 @@ namespace RamzXOtp.Tests
             foreach (QrEcLevel level in new[] { QrEcLevel.L, QrEcLevel.M, QrEcLevel.Q, QrEcLevel.H })
                 for (int v = 1; v <= 40; ++v)
                 {
-                    string text = v == 1 ? "otpauth://x" : Uri;
-                    if (v == 1 && level == QrEcLevel.H) text = "abc";
+                    // Fill the symbol completely: byte capacity = (data bits - mode - count) / 8.
+                    int capacity = (QrTables.DataCodewords(level, v) * 8 - 4 - QrBitstream.CharCountBits(QrMode.Byte, v)) / 8;
+                    StringBuilder sb = new StringBuilder();
+                    while (sb.Length < capacity) sb.Append(Uri);
+                    string text = sb.ToString(0, capacity);
+
                     QrCode c = QrEncoder.Encode(text, level, v % 8, v);
                     Assert.Equal(v, c.Version);
                     Assert.Equal(text, QrDecoder.DecodeGrid(Grid(c)));
