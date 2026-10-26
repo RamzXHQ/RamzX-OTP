@@ -3,7 +3,7 @@
 **One-time passwords (TOTP / HOTP) for KeePass 2 – with QR code import straight from your screen.**
 Free and open source (MIT). Work in progress.
 
-[![Build](https://github.com/SeeColors/RamzX-otp/actions/workflows/build.yml/badge.svg)](https://github.com/SeeColors/RamzX-otp/actions/workflows/build.yml)
+[![Build](https://github.com/RamzXHQ/RamzX-OTP/actions/workflows/build.yml/badge.svg)](https://github.com/RamzXHQ/RamzX-OTP/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Status: early development](https://img.shields.io/badge/Status-early%20development-orange)
 
