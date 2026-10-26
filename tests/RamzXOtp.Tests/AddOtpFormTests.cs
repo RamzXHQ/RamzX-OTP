@@ -1,5 +1,5 @@
 // RamzX OTP - tests
-// Copyright (c) 2026 SeeColors iT. MIT License.
+// Copyright (c) 2026 RamzX. MIT License.
 
 using System.Reflection;
 using System.Windows.Forms;

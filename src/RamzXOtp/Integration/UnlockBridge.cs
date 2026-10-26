@@ -1,5 +1,5 @@
 // RamzX OTP - KeePass 2 plugin
-// Copyright (c) 2026 SeeColors iT. MIT License.
+// Copyright (c) 2026 RamzX. MIT License.
 
 using System;
 using System.Reflection;
@@ -9,7 +9,7 @@ using System.Windows.Forms;
 namespace RamzXOtp.Integration
 {
     /// <summary>
-    /// Finds the Miftawerk Unlock plugin at run time (no compile-time dependency) and uses its
+    /// Finds the RamzX Unlock plugin at run time (no compile-time dependency) and uses its
     /// public MiftawerkUnlockApi to ask for Windows Hello. Both plugins keep working alone.
     /// </summary>
     internal sealed class UnlockBridge
@@ -22,7 +22,7 @@ namespace RamzXOtp.Integration
 
         private UnlockBridge(MethodInfo verify) { m_verify = verify; }
 
-        /// <summary>The bridge to the loaded Miftawerk Unlock plugin, or null if it is not loaded.</summary>
+        /// <summary>The bridge to the loaded RamzX Unlock plugin, or null if it is not loaded.</summary>
         internal static UnlockBridge Find()
         {
             foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
@@ -48,7 +48,7 @@ namespace RamzXOtp.Integration
             return new UnlockBridge(verify);
         }
 
-        /// <summary>Windows Hello prompt via Miftawerk Unlock; false on cancel or error.</summary>
+        /// <summary>Windows Hello prompt via RamzX Unlock; false on cancel or error.</summary>
         internal async Task<bool> VerifyAsync(IWin32Window owner, string message)
         {
             try

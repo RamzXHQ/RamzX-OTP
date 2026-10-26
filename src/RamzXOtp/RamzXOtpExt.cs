@@ -1,5 +1,5 @@
 // RamzX OTP - KeePass 2 plugin
-// Copyright (c) 2026 SeeColors iT. MIT License.
+// Copyright (c) 2026 RamzX. MIT License.
 
 using System;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace RamzXOtp
             m_host = host;
             Strings.Select(Program.Translation.Properties.Iso6391Code);
 
-            // Miftawerk Unlock is looked up each time, so load order and later installs don't matter.
+            // RamzX Unlock is looked up each time, so load order and later installs don't matter.
             m_guard = new CopyGuard(host.CustomConfig, () =>
             {
                 UnlockBridge b = UnlockBridge.Find();

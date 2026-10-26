@@ -1,5 +1,5 @@
 // RamzX OTP - KeePass 2 plugin
-// Copyright (c) 2026 SeeColors iT. MIT License.
+// Copyright (c) 2026 RamzX. MIT License.
 
 using System;
 using System.Text;

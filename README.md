@@ -37,5 +37,5 @@ For accounts that matter most, consider a separate database or a separate authen
 
 ## License
 
-MIT – see [LICENSE](LICENSE). © 2026 SeeColors iT.
+MIT – see [LICENSE](LICENSE). © 2026 RamzX.
 KeePass is a project by Dominik Reichl; RamzX OTP is an independent plugin.

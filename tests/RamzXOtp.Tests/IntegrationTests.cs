@@ -1,5 +1,5 @@
 // RamzX OTP - tests
-// Copyright (c) 2026 SeeColors iT. MIT License.
+// Copyright (c) 2026 RamzX. MIT License.
 
 using System;
 using System.Threading.Tasks;
@@ -67,7 +67,7 @@ namespace RamzXOtp.Tests
         [Fact]
         public void Find_WithoutMiftawerkUnlockLoaded_ReturnsNull()
         {
-            Assert.Null(UnlockBridge.Find()); // the test process does not load Miftawerk Unlock
+            Assert.Null(UnlockBridge.Find()); // the test process does not load RamzX Unlock
         }
     }
 

@@ -1,5 +1,5 @@
 // RamzX OTP - KeePass 2 plugin
-// Copyright (c) 2026 SeeColors iT. MIT License.
+// Copyright (c) 2026 RamzX. MIT License.
 
 using System;
 using System.Threading.Tasks;
@@ -12,12 +12,12 @@ namespace RamzXOtp.Integration
     {
         Allowed,
         Denied,
-        /// <summary>Protection is on, but Miftawerk Unlock is not loaded.</summary>
+        /// <summary>Protection is on, but RamzX Unlock is not loaded.</summary>
         UnlockMissing
     }
 
     /// <summary>
-    /// Optional protection: Windows Hello (through Miftawerk Unlock) before RamzX OTP copies or
+    /// Optional protection: Windows Hello (through RamzX Unlock) before RamzX OTP copies or
     /// shows a stored code. A confirmation stays valid for a short time so several codes can
     /// be copied in a row. KeePass's own OTP commands (Ctrl+T, {TIMEOTP}) are not affected.
     /// </summary>
@@ -64,7 +64,7 @@ namespace RamzXOtp.Integration
 
         /// <summary>
         /// Turns the protection off. Needs Windows Hello as well (otherwise anyone at the open
-        /// KeePass could switch it off with one click), unless Miftawerk Unlock is not loaded:
+        /// KeePass could switch it off with one click), unless RamzX Unlock is not loaded:
         /// then nobody could ever switch it off again.
         /// </summary>
         internal async Task<bool> DisableAsync(string reason)
