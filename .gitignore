@@ -11,3 +11,4 @@ testenv/
 # IDE
 .vs/
 *.user
+marketing/
