@@ -14,7 +14,7 @@
     <Description>One-time passwords (TOTP/HOTP) and QR import for KeePass 2.</Description>
     <Company>RamzX</Company>
     <Copyright>Copyright (c) 2026 RamzX</Copyright>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup>

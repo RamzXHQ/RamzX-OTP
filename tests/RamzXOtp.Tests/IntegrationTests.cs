@@ -13,7 +13,7 @@ using Xunit;
 
 namespace RamzXOtp.Tests
 {
-    // Stand-ins with the same public shape as MiftawerkUnlock.MiftawerkUnlockApi.
+    // Stand-ins with the same public shape as RamzXUnlock.RamzXUnlockApi.
     public static class FakeUnlockApiV1
     {
         public const int ApiVersion = 1;
@@ -65,7 +65,7 @@ namespace RamzXOtp.Tests
         }
 
         [Fact]
-        public void Find_WithoutMiftawerkUnlockLoaded_ReturnsNull()
+        public void Find_WithoutRamzXUnlockLoaded_ReturnsNull()
         {
             Assert.Null(UnlockBridge.Find()); // the test process does not load RamzX Unlock
         }

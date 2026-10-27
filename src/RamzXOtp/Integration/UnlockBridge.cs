@@ -10,12 +10,16 @@ namespace RamzXOtp.Integration
 {
     /// <summary>
     /// Finds the RamzX Unlock plugin at run time (no compile-time dependency) and uses its
-    /// public MiftawerkUnlockApi to ask for Windows Hello. Both plugins keep working alone.
+    /// public RamzXUnlockApi to ask for Windows Hello. Both plugins keep working alone.
+    /// Up to Unlock 0.6 the assembly was "MiftawerkUnlock" with MiftawerkUnlock.MiftawerkUnlockApi.
     /// </summary>
     internal sealed class UnlockBridge
     {
-        internal const string AssemblyName = "MiftawerkUnlock";
-        internal const string ApiTypeName = "MiftawerkUnlock.MiftawerkUnlockApi";
+        private static readonly string[][] Apis =
+        {
+            new[] { "RamzXUnlock", "RamzXUnlock.RamzXUnlockApi" },
+            new[] { "MiftawerkUnlock", "MiftawerkUnlock.MiftawerkUnlockApi" },
+        };
         internal const int SupportedApiVersion = 1;
 
         private readonly MethodInfo m_verify;
@@ -25,12 +29,13 @@ namespace RamzXOtp.Integration
         /// <summary>The bridge to the loaded RamzX Unlock plugin, or null if it is not loaded.</summary>
         internal static UnlockBridge Find()
         {
-            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                if (!string.Equals(a.GetName().Name, AssemblyName, StringComparison.OrdinalIgnoreCase)) continue;
-                UnlockBridge b = Bind(a.GetType(ApiTypeName, false));
-                if (b != null) return b;
-            }
+            foreach (string[] api in Apis)
+                foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (!string.Equals(a.GetName().Name, api[0], StringComparison.OrdinalIgnoreCase)) continue;
+                    UnlockBridge b = Bind(a.GetType(api[1], false));
+                    if (b != null) return b;
+                }
             return null;
         }
 
