@@ -118,7 +118,7 @@ namespace RamzXOtp.UI
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            BannerFactory.CreateBannerEx(this, m_banner, Icons.Timer(48), Strings.Get(Strings.ImportTitle),
+            BannerFactory.CreateBannerEx(this, m_banner, Icons.Logo(48), Strings.Get(Strings.ImportTitle),
                 Strings.Format(Strings.ImportSubtitle, m_groupName));
         }
 

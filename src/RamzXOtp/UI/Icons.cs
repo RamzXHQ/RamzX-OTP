@@ -8,18 +8,71 @@ using System.Windows.Forms;
 
 namespace RamzXOtp.UI
 {
-    /// <summary>Plugin icon drawn in code (no image files): a blue timer with a check-style hand.</summary>
+    /// <summary>Icons drawn in code (no image files): the RamzX logo and small action symbols.</summary>
     internal static class Icons
     {
         private static readonly Color Blue = Color.FromArgb(37, 99, 235);
+        private static readonly Color Cyan = Color.FromArgb(41, 182, 246);
+        private static readonly Color Navy = Color.FromArgb(11, 18, 32);
 
-        /// <summary>Menu icon scaled to the DPI of the given window (16 px at 100 %).</summary>
-        internal static Bitmap Menu(Control dpiSource)
+        internal const string Website = "https://ramzx.de";
+
+        private static int MenuSize(Control dpiSource)
         {
             float dpi = 96f;
             if (dpiSource != null)
                 using (Graphics g = dpiSource.CreateGraphics()) dpi = g.DpiX;
-            return Timer((int)Math.Round(16 * dpi / 96f));
+            return (int)Math.Round(16 * dpi / 96f);
+        }
+
+        /// <summary>RamzX logo in menu size (16 px at 100 %, DPI-aware).</summary>
+        internal static Bitmap Menu(Control dpiSource) { return Logo(MenuSize(dpiSource)); }
+
+        /// <summary>Timer symbol in menu size, for the "copy OTP code" item.</summary>
+        internal static Bitmap MenuTimer(Control dpiSource) { return Timer(MenuSize(dpiSource)); }
+
+        // The "X" of the RamzX logo: two chevrons on a 460 x 460 grid (from the RamzX avatar).
+        private static readonly PointF[] LeftMark =
+        {
+            new PointF(140, 175), new PointF(180, 175), new PointF(218, 230),
+            new PointF(152, 322), new PointF(112, 322), new PointF(178, 230)
+        };
+        private static readonly PointF[] RightMark =
+        {
+            new PointF(310, 138), new PointF(348, 138), new PointF(282, 230),
+            new PointF(320, 285), new PointF(282, 285), new PointF(242, 230)
+        };
+
+        /// <summary>RamzX app icon: rounded navy square with the blue "X".</summary>
+        internal static Bitmap Logo(int size)
+        {
+            size = Math.Max(16, size);
+            Bitmap bmp = new Bitmap(size, size);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+                using (GraphicsPath p = Theme.RoundRect(new RectangleF(0, 0, size - 1, size - 1), size * 0.22f))
+                using (SolidBrush b = new SolidBrush(Navy))
+                    g.FillPath(b, p);
+
+                float pad = size * 0.2f, box = size - 2 * pad;
+                const float minX = 112, maxX = 348, minY = 138, maxY = 322;
+                float s = Math.Min(box / (maxX - minX), box / (maxY - minY));
+                float ox = pad + (box - (maxX - minX) * s) / 2f - minX * s;
+                float oy = pad + (box - (maxY - minY) * s) / 2f - minY * s;
+                using (LinearGradientBrush lb = new LinearGradientBrush(
+                    new PointF(ox + minX * s, oy + minY * s), new PointF(ox + maxX * s, oy + maxY * s), Cyan, Blue))
+                {
+                    foreach (PointF[] mark in new[] { LeftMark, RightMark })
+                    {
+                        PointF[] pts = new PointF[mark.Length];
+                        for (int i = 0; i < pts.Length; ++i) pts[i] = new PointF(ox + mark[i].X * s, oy + mark[i].Y * s);
+                        g.FillPolygon(lb, pts);
+                    }
+                }
+            }
+            return bmp;
         }
 
         private delegate void Painter(Graphics g, float s, Pen p, Brush b);

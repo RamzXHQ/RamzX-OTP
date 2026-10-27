@@ -200,7 +200,7 @@ namespace RamzXOtp.UI
         {
             base.OnLoad(e);
             // Same banner style as KeePass's own dialogs.
-            BannerFactory.CreateBannerEx(this, m_banner, Icons.Timer(48), Ui.Title,
+            BannerFactory.CreateBannerEx(this, m_banner, Icons.Logo(48), Ui.Title,
                 Strings.Format(Strings.BannerSubtitle, m_entryTitle));
             ClientSize = new Size(ClientSize.Width, m_banner.Height + Controls[0].PreferredSize.Height + Font.Height * 4);
             m_input.Focus();

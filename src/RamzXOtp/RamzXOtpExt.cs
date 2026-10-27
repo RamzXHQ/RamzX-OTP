@@ -87,7 +87,7 @@ namespace RamzXOtp
             if (cms == null) return;
 
             m_topCopy = new ToolStripMenuItem(Strings.Get(Strings.MenuCopyTopProtected));
-            m_topCopy.Image = Icons.Menu(m_host.MainWindow);
+            m_topCopy.Image = Icons.MenuTimer(m_host.MainWindow);
             m_topCopy.Font = new System.Drawing.Font(cms.Font, System.Drawing.FontStyle.Bold);
             m_topCopy.Visible = false;
             m_topCopy.Click += OnCopyClick;
@@ -167,6 +167,17 @@ namespace RamzXOtp
             protect.ToolTipText = Strings.Get(Strings.RequireHelloNote);
             protect.Click += OnProtectClick;
             root.DropDownItems.Add(protect);
+
+            // Brand line: RamzX logo and website.
+            root.DropDownItems.Add(new ToolStripSeparator());
+            ToolStripMenuItem about = new ToolStripMenuItem("RamzX · ramzx.de");
+            about.Image = Icons.Menu(m_host.MainWindow);
+            about.Click += delegate
+            {
+                try { System.Diagnostics.Process.Start(Icons.Website); }
+                catch (Exception) { }
+            };
+            root.DropDownItems.Add(about);
 
             root.DropDownOpening += delegate
             {
